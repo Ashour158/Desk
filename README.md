@@ -59,9 +59,33 @@ A comprehensive, enterprise-grade helpdesk and field service management platform
 - Node.js 18+
 - PostgreSQL 15+ with PostGIS
 - Redis 7+
-- Docker & Docker Compose
+- Docker & Docker Compose (recommended)
 
-### Quick Start
+### Quick Start with Setup Script
+
+The fastest way to get started is using our setup script:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/your-username/helpdesk-platform.git
+cd helpdesk-platform
+
+# 2. Run the setup script (installs everything automatically)
+./scripts/setup.sh
+```
+
+The setup script will:
+- ✅ Create and activate virtual environment
+- ✅ Install all Python dependencies
+- ✅ Install and configure pre-commit hooks
+- ✅ Set up environment variables from env.example
+- ✅ Install frontend dependencies
+- ✅ Run database migrations
+- ✅ Collect static files
+
+### Manual Setup (Alternative)
+
+If you prefer manual setup or the script doesn't work:
 
 1. **Clone the repository**
 ```bash
@@ -84,7 +108,7 @@ cp env.example .env
 # Edit .env with your configuration
 ```
 
-4. **Start with Docker Compose**
+4. **Start with Docker Compose** (Recommended)
 ```bash
 docker-compose up -d
 ```
@@ -221,6 +245,36 @@ npm start
 
 ## 🔧 Configuration
 
+### Pre-commit Hooks
+
+This project uses pre-commit hooks to ensure code quality before commits. The hooks are automatically installed when you run the setup script.
+
+**Manual Installation:**
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+**Pre-commit Checks Include:**
+- ✅ Python code formatting (black, isort)
+- ✅ Python linting (flake8)
+- ✅ Python security scanning (bandit)
+- ✅ JavaScript/TypeScript linting (eslint)
+- ✅ JavaScript/TypeScript formatting (prettier)
+- ✅ Secret detection (detect-secrets)
+- ✅ YAML validation
+- ✅ Django-specific checks
+- ✅ Dockerfile linting
+
+**Run Manually:**
+```bash
+# Run on all files
+pre-commit run --all-files
+
+# Run on staged files only
+pre-commit run
+```
+
 ### Environment Variables
 
 ```bash
@@ -265,6 +319,56 @@ python manage.py migrate
 ```bash
 python manage.py loaddata initial_data.json
 ```
+
+## 📚 Documentation
+
+This project has comprehensive documentation organized by topic:
+
+### Documentation Structure
+
+- **[docs/deployment/](docs/deployment/)** - Deployment guides, infrastructure setup, and configuration
+  - AWS, Azure, DigitalOcean deployment guides
+  - Environment configuration and setup checklists
+  - CI/CD pipeline documentation
+  - Rollback procedures and operational documentation
+
+- **[docs/security/](docs/security/)** - Security audits, compliance, and best practices
+  - Security audit reports and scan results
+  - Security implementation guides
+  - API security documentation
+  - Compliance reports
+
+- **[docs/testing/](docs/testing/)** - Testing documentation and coverage reports
+  - Test execution guides and results
+  - Code quality reports
+  - Test coverage analysis
+  - Database and API testing documentation
+
+- **[docs/api/](docs/api/)** - API documentation and endpoint references
+  - Comprehensive API documentation
+  - API endpoint inventory
+  - API validation reports
+
+- **[docs/architecture/](docs/architecture/)** - System architecture and design
+  - Database schemas and ER diagrams
+  - Frontend architecture and component structure
+  - State management documentation
+
+- **[docs/performance/](docs/performance/)** - Performance optimization and monitoring
+  - Performance analysis reports
+  - Database query optimization
+  - Frontend performance optimization
+  - Monitoring setup and best practices
+
+### Quick Documentation Links
+
+- **Getting Started**: [README.md](README.md) (this file)
+- **Developer Guide**: [docs/DEVELOPER_ONBOARDING.md](docs/DEVELOPER_ONBOARDING.md)
+- **API Reference**: [docs/api/COMPREHENSIVE_API_DOCUMENTATION.md](docs/api/COMPREHENSIVE_API_DOCUMENTATION.md)
+- **Deployment Guide**: [docs/deployment/](docs/deployment/)
+- **Testing Guide**: [docs/testing/TEST_EXECUTION_GUIDE.md](docs/testing/TEST_EXECUTION_GUIDE.md)
+- **Contributing**: [CONTRIBUTING.md](CONTRIBUTING.md)
+- **Changelog**: [CHANGELOG.md](CHANGELOG.md)
 
 ## 📱 API Documentation
 
@@ -366,14 +470,31 @@ docker-compose -f docker-compose.prod.yml up -d
 
 ## 🧪 Testing
 
+### Test Organization
+
+Tests are organized in the following structure:
+- **tests/** - Integration and system-level tests
+- **core/tests/** - Django unit tests
+- **test_scripts/** - Specialized test scripts
+
 ### Run Tests
+
 ```bash
-# Backend tests
+# Run all integration tests
+pytest tests/
+
+# Run Django unit tests
 cd core
 python manage.py test
 
+# Run with coverage
+pytest tests/ --cov=core --cov-report=html
+
+# Run specific test file
+pytest tests/test_health_checks.py
+
 # API tests
-pytest tests/api/
+pytest core/tests/test_apis.py
 
 # Frontend tests
 cd customer-portal
@@ -384,12 +505,30 @@ npm run test:e2e
 ```
 
 ### Test Coverage
+
 ```bash
 # Generate coverage report
+cd core
 coverage run --source='.' manage.py test
 coverage report
 coverage html
+
+# View coverage report
+open htmlcov/index.html  # macOS
+xdg-open htmlcov/index.html  # Linux
 ```
+
+### Continuous Testing
+
+The CI/CD pipeline automatically runs:
+- ✅ Unit tests
+- ✅ Integration tests
+- ✅ Linting (flake8, black, eslint)
+- ✅ Security scans (bandit, Trivy)
+- ✅ Dependency scanning
+- ✅ Code quality checks
+
+See [docs/testing/](docs/testing/) for detailed testing documentation.
 
 ## 📊 Monitoring
 
@@ -420,10 +559,36 @@ coverage html
 - XSS protection
 - Data encryption at rest
 
+### Security Scanning
+
+The project includes comprehensive security scanning:
+- **Dependency Scanning**: Automated vulnerability checks for Python and Node.js dependencies
+- **SAST (Static Application Security Testing)**: Bandit for Python, CodeQL for multi-language analysis
+- **Container Scanning**: Trivy for Docker image vulnerabilities
+- **Secret Detection**: Pre-commit hooks to prevent committing secrets
+- **Pre-commit Hooks**: Automated security checks before every commit
+
+### Security Best Practices
+
+**Environment Variables:**
+- ✅ Never commit `.env` files or `env.production` to version control
+- ✅ Use strong, unique secrets for each environment
+- ✅ Rotate secrets regularly (every 90 days)
+- ✅ Use secrets management services for production
+
+**Development:**
+- ✅ Run pre-commit hooks before committing code
+- ✅ Keep dependencies up to date
+- ✅ Review security scan results in CI/CD
+- ✅ Follow secure coding practices
+
 ### Compliance
 - GDPR compliance features
 - SOC 2 Type II ready
 - Data retention policies
+- Audit logging
+
+For detailed security information, see [docs/security/](docs/security/).
 - Audit trail logging
 
 ## 🤝 Contributing
