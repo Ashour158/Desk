@@ -10,24 +10,18 @@ services:
       repo: Ashour158/Desk
       branch: main
       deploy_on_push: true
-    source_dir: /
+    # Set source directory to core where Django app lives
+    source_dir: core
     environment_slug: python
-    build_command: pip install -r requirements.txt
-    run_command: gunicorn config.wsgi:application --bind 0.0.0.0:8080 --workers 2 --chdir core
+    # Build from parent directory to access requirements.txt
+    build_command: pip install -r ../requirements.txt
+    # Run gunicorn from core directory
+    run_command: gunicorn config.wsgi:application --bind 0.0.0.0:8080 --workers 2 --timeout 120
     http_port: 8080
     instance_count: 1
     instance_size_slug: basic-xxs
     routes:
       - path: /
-    envs:
-      # Django Settings
-      - key: DJANGO_SETTINGS_MODULE
-        scope: RUN_AND_BUILD_TIME
-        value: config.settings.production
-      
-      - key: PYTHONPATH
-        scope: RUN_AND_BUILD_TIME
-        value: /workspace/core
 
 # ===================================
 # DATABASES
@@ -66,6 +60,10 @@ envs:
   - key: DISABLE_COLLECTSTATIC
     scope: BUILD_TIME
     value: "1"
+  
+  - key: DJANGO_SETTINGS_MODULE
+    scope: RUN_AND_BUILD_TIME
+    value: config.settings.production
   
   # Database Connection
   - key: DATABASE_URL
@@ -109,15 +107,15 @@ envs:
   # Security
   - key: SECURE_SSL_REDIRECT
     scope: RUN_TIME
-    value: "True"
+    value: "False"
   
   - key: SESSION_COOKIE_SECURE
     scope: RUN_TIME
-    value: "True"
+    value: "False"
   
   - key: CSRF_COOKIE_SECURE
     scope: RUN_TIME
-    value: "True"
+    value: "False"
 
 # ===================================
 # REGION
