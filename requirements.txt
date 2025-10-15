@@ -56,8 +56,8 @@ django-geojson==3.1.0
 geopy==2.4.0
 
 # Forms & UI
-crispy-forms==2.1
-crispy-bootstrap5==0.7
+django-crispy-forms==2.3
+django-crispy-forms
 
 # Payment Processing
 stripe==7.8.0
