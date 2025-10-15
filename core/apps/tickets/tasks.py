@@ -3,6 +3,7 @@ Celery tasks for ticket system.
 """
 
 from celery import shared_task
+from celery.exceptions import MaxRetriesExceededError
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
@@ -195,9 +196,16 @@ def apply_sla_policy(ticket):
         logger.error(f"Error applying SLA policy: {str(e)}")
 
 
-@shared_task
-def send_ticket_created_email(ticket_id):
-    """Send ticket created confirmation email."""
+@shared_task(
+    bind=True,
+    max_retries=3,
+    default_retry_delay=60,  # 1 minute
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_jitter=True
+)
+def send_ticket_created_email(self, ticket_id):
+    """Send ticket created confirmation email with retry logic."""
     try:
         ticket = Ticket.objects.get(id=ticket_id)
         customer = ticket.customer
@@ -235,13 +243,25 @@ def send_ticket_created_email(ticket_id):
 
             logger.info(f"Sent ticket created email for {ticket.ticket_number}")
 
-    except Exception as e:
-        logger.error(f"Error sending ticket created email: {str(e)}")
+    except Exception as exc:
+        logger.error(f"Failed to send ticket created email for ticket {ticket_id}: {exc}")
+        try:
+            raise self.retry(exc=exc, countdown=60 * (self.request.retries + 1))
+        except MaxRetriesExceededError:
+            logger.critical(f"Max retries exceeded for ticket created email, ticket {ticket_id}")
+            # Could send alert to admin here
 
 
-@shared_task
-def send_ticket_updated_email(ticket_id, update_type):
-    """Send ticket update notification email."""
+@shared_task(
+    bind=True,
+    max_retries=3,
+    default_retry_delay=60,  # 1 minute
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_jitter=True
+)
+def send_ticket_updated_email(self, ticket_id, update_type):
+    """Send ticket update notification email with retry logic."""
     try:
         ticket = Ticket.objects.get(id=ticket_id)
         customer = ticket.customer
@@ -279,8 +299,13 @@ def send_ticket_updated_email(ticket_id, update_type):
 
             logger.info(f"Sent ticket {update_type} email for {ticket.ticket_number}")
 
-    except Exception as e:
-        logger.error(f"Error sending ticket {update_type} email: {str(e)}")
+    except Exception as exc:
+        logger.error(f"Failed to send ticket {update_type} email for ticket {ticket_id}: {exc}")
+        try:
+            raise self.retry(exc=exc, countdown=60 * (self.request.retries + 1))
+        except MaxRetriesExceededError:
+            logger.critical(f"Max retries exceeded for ticket {update_type} email, ticket {ticket_id}")
+            # Could send alert to admin here
 
 
 @shared_task
