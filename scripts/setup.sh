@@ -107,12 +107,12 @@ fi
 # Database migrations
 echo -e "${YELLOW}Step 9: Running database migrations...${NC}"
 cd core
-python manage.py migrate > /dev/null 2>&1
+python manage.py migrate > /tmp/migrate.log 2>&1 || { echo -e "${RED}Error: Database migration failed. See details below:${NC}"; cat /tmp/migrate.log; exit 1; }
 echo -e "${GREEN}✓ Database migrations completed${NC}"
 
 # Collect static files
 echo -e "${YELLOW}Step 10: Collecting static files...${NC}"
-python manage.py collectstatic --noinput > /dev/null 2>&1
+python manage.py collectstatic --noinput > /tmp/collectstatic.log 2>&1 || { echo -e "${RED}Error: Collectstatic failed. See details below:${NC}"; cat /tmp/collectstatic.log; exit 1; }
 echo -e "${GREEN}✓ Static files collected${NC}"
 
 cd ..
