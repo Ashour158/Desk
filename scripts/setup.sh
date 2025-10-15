@@ -36,7 +36,11 @@ echo -e "${GREEN}✓ Virtual environment activated${NC}"
 
 # Upgrade pip
 echo -e "${YELLOW}Step 3: Upgrading pip...${NC}"
-pip install --upgrade pip > /dev/null 2>&1
+if ! pip install --upgrade pip > /tmp/pip_upgrade.log 2>&1; then
+    echo -e "${RED}Error: pip upgrade failed. See details below:${NC}"
+    cat /tmp/pip_upgrade.log
+    exit 1
+fi
 echo -e "${GREEN}✓ pip upgraded${NC}"
 
 # Install Python dependencies
