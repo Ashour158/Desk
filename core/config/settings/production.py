@@ -7,6 +7,11 @@ from .base import *
 
 # Production-specific overrides
 DEBUG = False
+
+# Validate DEBUG is False in production
+if DEBUG:
+    raise ValueError("DEBUG should never be True in production!")
+
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 
 # Database configuration for production

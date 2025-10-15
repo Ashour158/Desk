@@ -117,6 +117,10 @@ class Ticket(models.Model):
             models.Index(fields=["ticket_number"]),
             models.Index(fields=["created_at"]),
             models.Index(fields=["priority", "status"]),
+            models.Index(fields=["assigned_agent", "status"]),  # For agent workload queries
+            models.Index(fields=["sla_policy"]),  # For SLA queries
+            models.Index(fields=["first_response_due"]),  # For SLA tracking
+            models.Index(fields=["resolution_due"]),  # For SLA tracking
         ]
         ordering = ["-created_at"]
 
