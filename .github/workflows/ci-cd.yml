@@ -173,6 +173,7 @@ jobs:
           safety-report.json
           npm-audit-report.json
           npm-audit-realtime.json
+        if-no-files-found: ignore
 
   sast-scan:
     runs-on: ubuntu-latest
