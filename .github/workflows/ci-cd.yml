@@ -209,6 +209,7 @@ jobs:
       with:
         name: sast-results
         path: bandit-report.json
+        if-no-files-found: ignore
 
   build:
     needs: test
