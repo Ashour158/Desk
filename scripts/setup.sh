@@ -86,13 +86,16 @@ if command -v node &> /dev/null; then
     echo -e "${GREEN}✓ Node.js is installed (version: $(node -v))${NC}"
     
     # Install frontend dependencies
-    if [ -d "customer-portal" ]; then
-        echo -e "${YELLOW}Step 8: Installing frontend dependencies...${NC}"
-        cd customer-portal
-        npm install > /dev/null 2>&1
-        cd ..
-        echo -e "${GREEN}✓ Frontend dependencies installed${NC}"
-    fi
+    FRONTEND_DIRS=("customer-portal" "realtime-service")
+    for dir in "${FRONTEND_DIRS[@]}"; do
+        if [ -d "$dir" ]; then
+            echo -e "${YELLOW}Step 8: Installing dependencies in $dir...${NC}"
+            cd "$dir"
+            npm ci > /dev/null 2>&1
+            cd ..
+            echo -e "${GREEN}✓ Dependencies installed in $dir${NC}"
+        fi
+    done
 else
     echo -e "${YELLOW}⚠ Node.js not installed (required for frontend)${NC}"
 fi
