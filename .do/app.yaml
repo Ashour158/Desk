@@ -1,165 +1,59 @@
 name: helpdesk-platform
 
 # ===================================
-# SERVICES (Web Services)
+# MAIN SERVICE - Django Backend
 # ===================================
 
 services:
-  # Django Backend API
   - name: django-backend
     github:
       repo: Ashour158/Desk
       branch: main
       deploy_on_push: true
-    source_dir: core
-    environment_slug: python
-    build_command: pip install -r requirements/production.txt
-    run_command: gunicorn config.wsgi:application --bind 0.0.0.0:8080 --workers 4 --timeout 120
-    http_port: 8080
-    instance_count: 2
-    instance_size_slug: basic-xxs
-    health_check:
-      http_path: /health/
-      initial_delay_seconds: 30
-      period_seconds: 10
-      timeout_seconds: 5
-      success_threshold: 1
-      failure_threshold: 3
-    routes:
-      - path: /api
-      - path: /admin
-    envs:
-      - key: DJANGO_SETTINGS_MODULE
-        value: config.settings.production
-      - key: DEBUG
-        value: "False"
-      - key: SECURE_SSL_REDIRECT
-        value: "True"
-      - key: SESSION_COOKIE_SECURE
-        value: "True"
-      - key: CSRF_COOKIE_SECURE
-        value: "True"
-
-  # AI Microservice
-  - name: ai-service
-    github:
-      repo: Ashour158/Desk
-      branch: main
-      deploy_on_push: true
-    source_dir: ai-service
+    source_dir: /
     environment_slug: python
     build_command: pip install -r requirements.txt
-    run_command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --workers 2
-    http_port: 8001
+    run_command: gunicorn config.wsgi:application --bind 0.0.0.0:8080 --workers 2 --chdir core
+    http_port: 8080
     instance_count: 1
     instance_size_slug: basic-xxs
-    health_check:
-      http_path: /health/
-      initial_delay_seconds: 30
-      period_seconds: 10
-    routes:
-      - path: /ai
-
-  # Real-time WebSocket Service
-  - name: realtime-service
-    github:
-      repo: Ashour158/Desk
-      branch: main
-      deploy_on_push: true
-    source_dir: realtime-service
-    environment_slug: node-js
-    build_command: npm install
-    run_command: npm start
-    http_port: 3001
-    instance_count: 1
-    instance_size_slug: basic-xxxs
-    health_check:
-      http_path: /health/
-      initial_delay_seconds: 20
-      period_seconds: 10
-    routes:
-      - path: /socket.io
-
-# ===================================
-# STATIC SITES (Frontend)
-# ===================================
-
-static_sites:
-  # Customer Portal (React Frontend)
-  - name: customer-portal
-    github:
-      repo: Ashour158/Desk
-      branch: main
-      deploy_on_push: true
-    source_dir: customer-portal
-    build_command: npm install && npm run build
-    output_dir: build
-    index_document: index.html
-    error_document: index.html
     routes:
       - path: /
     envs:
-      - key: REACT_APP_API_URL
-        value: ${APP_URL}/api
-
-# ===================================
-# WORKERS (Background Jobs)
-# ===================================
-
-workers:
-  # Celery Worker
-  - name: celery-worker
-    github:
-      repo: Ashour158/Desk
-      branch: main
-      deploy_on_push: true
-    source_dir: core
-    environment_slug: python
-    build_command: pip install -r requirements/production.txt
-    run_command: celery -A config worker -l info --concurrency=2
-    instance_count: 1
-    instance_size_slug: basic-xxs
-
-  # Celery Beat Scheduler
-  - name: celery-beat
-    github:
-      repo: Ashour158/Desk
-      branch: main
-      deploy_on_push: true
-    source_dir: core
-    environment_slug: python
-    build_command: pip install -r requirements/production.txt
-    run_command: celery -A config beat -l info
-    instance_count: 1
-    instance_size_slug: basic-xxxs
+      # Django Settings
+      - key: DJANGO_SETTINGS_MODULE
+        scope: RUN_AND_BUILD_TIME
+        value: config.settings.production
+      
+      - key: PYTHONPATH
+        scope: RUN_AND_BUILD_TIME
+        value: /workspace/core
 
 # ===================================
 # DATABASES
 # ===================================
 
 databases:
-  # Reference to your existing PostgreSQL database
   - name: db
     engine: PG
     production: true
     cluster_name: helpdesk
   
-  # Reference to your existing Valkey/Redis
   - name: redis
     engine: REDIS
     production: true
     cluster_name: helpdeskv
 
 # ===================================
-# ENVIRONMENT VARIABLES (App-Level)
+# ENVIRONMENT VARIABLES
 # ===================================
 
 envs:
   # Django Settings
   - key: SECRET_KEY
-    scope: RUN_TIME
+    scope: RUN_AND_BUILD_TIME
     type: SECRET
-    value: CHANGE_ME  # Generate: python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+    value: GGQVu%4FV6BdKUe2ct4i(c-J!iJxoI8RXC=%ayE-z85tbq6yLc
   
   - key: DEBUG
     scope: RUN_AND_BUILD_TIME
@@ -167,9 +61,13 @@ envs:
   
   - key: ALLOWED_HOSTS
     scope: RUN_TIME
-    value: ".ondigitalocean.app,.yourdomain.com"
+    value: ".ondigitalocean.app"
   
-  # Database Connection (auto-populated by DigitalOcean)
+  - key: DISABLE_COLLECTSTATIC
+    scope: BUILD_TIME
+    value: "1"
+  
+  # Database Connection
   - key: DATABASE_URL
     scope: RUN_TIME
     value: ${db.DATABASE_URL}
@@ -195,7 +93,7 @@ envs:
     type: SECRET
     value: ${db.PASSWORD}
   
-  # Redis/Valkey Connection (auto-populated)
+  # Redis Connection
   - key: REDIS_URL
     scope: RUN_TIME
     value: ${redis.DATABASE_URL}
@@ -208,38 +106,7 @@ envs:
     scope: RUN_TIME
     value: ${redis.DATABASE_URL}
   
-  # External Services (Add your keys)
-  - key: OPENAI_API_KEY
-    scope: RUN_TIME
-    type: SECRET
-    value: ""  # Add your key
-  
-  - key: GOOGLE_MAPS_API_KEY
-    scope: RUN_TIME
-    type: SECRET
-    value: ""  # Add your key
-  
-  - key: TWILIO_ACCOUNT_SID
-    scope: RUN_TIME
-    type: SECRET
-    value: ""  # Add your key
-  
-  - key: TWILIO_AUTH_TOKEN
-    scope: RUN_TIME
-    type: SECRET
-    value: ""  # Add your key
-  
-  - key: SENDGRID_API_KEY
-    scope: RUN_TIME
-    type: SECRET
-    value: ""  # Add your key
-  
-  - key: STRIPE_SECRET_KEY
-    scope: RUN_TIME
-    type: SECRET
-    value: ""  # Add your key
-  
-  # Security Settings
+  # Security
   - key: SECURE_SSL_REDIRECT
     scope: RUN_TIME
     value: "True"
@@ -251,25 +118,9 @@ envs:
   - key: CSRF_COOKIE_SECURE
     scope: RUN_TIME
     value: "True"
-  
-  - key: SECURE_HSTS_SECONDS
-    scope: RUN_TIME
-    value: "31536000"
 
 # ===================================
 # REGION
 # ===================================
 
 region: fra
-
-# ===================================
-# ALERTS (Optional but Recommended)
-# ===================================
-
-alerts:
-  - rule: DEPLOYMENT_FAILED
-  - rule: DOMAIN_FAILED
-  - rule: HIGH_CPU_UTILIZATION
-    value: 80
-  - rule: HIGH_MEMORY_UTILIZATION
-    value: 80
