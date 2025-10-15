@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Advanced Security Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid" x-data="advancedSecurityDashboard()">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">Advanced Security</h1>
+                    <p class="text-muted">Enterprise security and compliance management</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" @click="createPolicy()">
+                        <i class="fas fa-plus"></i> New Policy
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Security Policies</h6>
+                        <h3 class="mb-0">{{ total_policies }}</h3>
+                    </div>
+                    <div class="text-primary">
+                        <i class="fas fa-shield-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card success fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Audit Logs</h6>
+                        <h3 class="mb-0">{{ audit_logs }}</h3>
+                    </div>
+                    <div class="text-success">
+                        <i class="fas fa-list fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card info fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Threat Detections</h6>
+                        <h3 class="mb-0">{{ threat_detections }}</h3>
+                    </div>
+                    <div class="text-info">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card warning fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Security Incidents</h6>
+                        <h3 class="mb-0">{{ security_incidents }}</h3>
+                    </div>
+                    <div class="text-warning">
+                        <i class="fas fa-bug fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Features -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card fade-in">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Security Features
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                                <h6>Security Policies</h6>
+                                <p class="text-muted">Comprehensive security policy management</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-list fa-3x text-success mb-3"></i>
+                                <h6>Audit Logging</h6>
+                                <p class="text-muted">Complete audit trail and logging</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-exclamation-triangle fa-3x text-info mb-3"></i>
+                                <h6>Threat Detection</h6>
+                                <p class="text-muted">AI-powered threat detection</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-bug fa-3x text-warning mb-3"></i>
+                                <h6>Incident Response</h6>
+                                <p class="text-muted">Security incident management</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function advancedSecurityDashboard() {
+    return {
+        createPolicy() {
+            console.log('Creating new security policy...');
+        }
+    }
+}
+</script>
+{% endblock %}

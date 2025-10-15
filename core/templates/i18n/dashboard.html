@@ -1,0 +1,421 @@
+{% extends 'base.html' %}
+
+{% block title %}Internationalization Dashboard - Helpdesk Platform{% endblock %}
+{% block page_title %}Internationalization Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .i18n-card {
+        border-left: 4px solid;
+        transition: all 0.3s ease;
+    }
+    .i18n-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .i18n-card.primary { border-left-color: #007bff; }
+    .i18n-card.success { border-left-color: #28a745; }
+    .i18n-card.warning { border-left-color: #ffc107; }
+    .i18n-card.info { border-left-color: #17a2b8; }
+    
+    .language-flag {
+        width: 24px;
+        height: 18px;
+        border-radius: 2px;
+        margin-right: 0.5rem;
+        display: inline-block;
+    }
+    
+    .translation-progress {
+        height: 8px;
+        border-radius: 4px;
+        background: #e9ecef;
+        overflow: hidden;
+    }
+    
+    .translation-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #28a745, #20c997);
+        transition: width 0.6s ease;
+    }
+    
+    .language-stats {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .language-stats .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+    
+    .language-stats .metric-label {
+        font-size: 0.875rem;
+        opacity: 0.9;
+    }
+    
+    .translation-item {
+        border-left: 3px solid;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 0 0.375rem 0.375rem 0;
+        transition: all 0.2s ease;
+    }
+    
+    .translation-item:hover {
+        background: #e9ecef;
+        transform: translateX(2px);
+    }
+    
+    .translation-item.approved { border-left-color: #28a745; }
+    .translation-item.pending { border-left-color: #ffc107; }
+    .translation-item.rejected { border-left-color: #dc3545; }
+    
+    .rtl-indicator {
+        background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .language-selector {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+        transition: all 0.2s ease;
+    }
+    
+    .language-selector:hover {
+        border-color: #007bff;
+        box-shadow: 0 2px 8px rgba(0,123,255,0.15);
+    }
+    
+    .language-selector.active {
+        border-color: #007bff;
+        background: #f8f9ff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Language Statistics -->
+<div class="language-stats">
+    <div class="row">
+        <div class="col-md-3 text-center">
+            <div class="metric-value">{{ total_translations }}</div>
+            <div class="metric-label">Total Translations</div>
+        </div>
+        <div class="col-md-3 text-center">
+            <div class="metric-value">{{ approved_translations }}</div>
+            <div class="metric-label">Approved</div>
+        </div>
+        <div class="col-md-3 text-center">
+            <div class="metric-value">{{ language_stats|length }}</div>
+            <div class="metric-label">Languages</div>
+        </div>
+        <div class="col-md-3 text-center">
+            <div class="metric-value">{{ memory_count }}</div>
+            <div class="metric-label">Memory Entries</div>
+        </div>
+    </div>
+</div>
+
+<!-- Language Coverage -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-globe me-2"></i>
+                    Language Coverage
+                </h6>
+                <a href="{% url 'language_management' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-cog me-1"></i>
+                    Manage Languages
+                </a>
+            </div>
+            <div class="card-body">
+                {% if language_stats %}
+                    <div class="row">
+                        {% for stat in language_stats %}
+                        <div class="col-md-4 mb-3">
+                            <div class="language-selector {% if stat.completeness == 100 %}active{% endif %}">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <span class="language-flag" style="background: url('https://flagcdn.com/16x12/{{ stat.language.country_code|lower }}.png') center/cover;"></span>
+                                        <strong>{{ stat.language.name }}</strong>
+                                        {% if stat.language.is_rtl %}
+                                        <span class="rtl-indicator ms-2">RTL</span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="badge badge-{% if stat.completeness == 100 %}success{% elif stat.completeness >= 50 %}warning{% else %}danger{% endif %}">
+                                        {{ stat.completeness|floatformat:0 }}%
+                                    </span>
+                                </div>
+                                <div class="translation-progress">
+                                    <div class="translation-progress-bar" style="width: {{ stat.completeness }}%"></div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-2">
+                                    <small class="text-muted">{{ stat.approved }}/{{ stat.total }} approved</small>
+                                    <small class="text-muted">{{ stat.language.code }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-globe fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Languages Configured</h5>
+                        <p class="text-muted">Add supported languages to get started with translations.</p>
+                        <a href="{% url 'language_management' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>
+                            Add Languages
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="row">
+    <!-- Recent Translation Requests -->
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-language me-2"></i>
+                    Recent Translation Requests
+                </h6>
+                <a href="{% url 'translation_requests' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-eye me-1"></i>
+                    View All
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_requests %}
+                    {% for request in recent_requests %}
+                    <div class="translation-item {{ request.status }}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="language-flag" style="background: url('https://flagcdn.com/16x12/{{ request.language.country_code|lower }}.png') center/cover;"></span>
+                                    <strong>{{ request.language.name }}</strong>
+                                    <span class="badge badge-{{ request.status }} ms-2">{{ request.get_status_display }}</span>
+                                </div>
+                                <p class="mb-1 text-muted">{{ request.original_text|truncatewords:20 }}</p>
+                                <small class="text-muted">
+                                    <i class="fas fa-user me-1"></i>
+                                    {{ request.requested_by.full_name }}
+                                    <span class="ms-3">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {{ request.created_at|timesince }} ago
+                                    </span>
+                                </small>
+                            </div>
+                            <div class="ms-3">
+                                {% if request.assigned_to %}
+                                <small class="text-muted">
+                                    <i class="fas fa-user-tie me-1"></i>
+                                    {{ request.assigned_to.full_name }}
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-language fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Recent Translation Requests</h5>
+                        <p class="text-muted">Translation requests will appear here when users request translations.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Translation Tools -->
+    <div class="col-lg-4">
+        <!-- Auto-Translation -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-robot me-2"></i>
+                    Auto-Translation
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Source Text</label>
+                    <textarea class="form-control" rows="3" placeholder="Enter text to translate..."></textarea>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <label class="form-label">From</label>
+                        <select class="form-select">
+                            <option value="en">English</option>
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                            <option value="de">German</option>
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">To</label>
+                        <select class="form-select">
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                            <option value="de">German</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-primary w-100" onclick="translateText()">
+                    <i class="fas fa-magic me-1"></i>
+                    Translate
+                </button>
+            </div>
+        </div>
+        
+        <!-- Translation Memory -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-database me-2"></i>
+                    Translation Memory
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="metric-value text-primary">{{ memory_count }}</div>
+                    <div class="metric-label text-muted">Memory Entries</div>
+                </div>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'translation_memory' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-eye me-1"></i>
+                        View Memory
+                    </a>
+                    <a href="{% url 'translation_management' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-cog me-1"></i>
+                        Manage Translations
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-bolt me-2"></i>
+                    Quick Actions
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'translation_request_create' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i>
+                        Request Translation
+                    </a>
+                    <a href="{% url 'content_translations' %}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-file-alt me-1"></i>
+                        Content Translations
+                    </a>
+                    <a href="{% url 'user_language_preferences' %}" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-user-cog me-1"></i>
+                        My Preferences
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-translation functionality
+    function translateText() {
+        const sourceText = document.querySelector('textarea').value;
+        const sourceLanguage = document.querySelector('select:first-of-type').value;
+        const targetLanguage = document.querySelector('select:last-of-type').value;
+        
+        if (!sourceText.trim()) {
+            alert('Please enter text to translate');
+            return;
+        }
+        
+        // Show loading state
+        const button = document.querySelector('button[onclick="translateText()"]');
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Translating...';
+        button.disabled = true;
+        
+        // Call translation API
+        fetch('/api/v1/i18n/auto-translate/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                source_text: sourceText,
+                source_language: sourceLanguage,
+                target_language: targetLanguage
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show translated text
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'alert alert-success mt-3';
+                resultDiv.innerHTML = `
+                    <h6>Translated Text:</h6>
+                    <p>${data.translated_text}</p>
+                    <small class="text-muted">Confidence: ${(data.confidence * 100).toFixed(1)}%</small>
+                `;
+                document.querySelector('.card-body').appendChild(resultDiv);
+            } else {
+                alert('Translation failed: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Translation error:', error);
+            alert('Translation failed. Please try again.');
+        })
+        .finally(() => {
+            // Reset button
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+    }
+    
+    // Auto-refresh translation statistics
+    function refreshTranslationStats() {
+        htmx.ajax('GET', '/api/v1/i18n/statistics/', {
+            target: '#translation-stats',
+            swap: 'innerHTML'
+        });
+    }
+    
+    // Refresh every 60 seconds
+    setInterval(refreshTranslationStats, 60000);
+    
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+</script>
+{% endblock %}

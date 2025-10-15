@@ -1,0 +1,425 @@
+{% extends "base_zoho.html" %}
+{% load static %}
+
+{% block title %}Dashboard - HelpDesk Platform{% endblock %}
+
+{% block breadcrumb %}Dashboard{% endblock %}
+
+{% block content %}
+<div x-data="dashboardApp()">
+    <!-- Page Header -->
+    <div class="zoho-page-header">
+        <h1 class="zoho-page-title">Dashboard</h1>
+        <div class="zoho-page-actions">
+            <button class="zoho-btn zoho-btn-secondary">
+                <i class="fas fa-download"></i>
+                Export
+            </button>
+            <button class="zoho-btn zoho-btn-primary">
+                <i class="fas fa-plus"></i>
+                New Ticket
+            </button>
+        </div>
+    </div>
+
+    <!-- Metrics Grid -->
+    <div class="zoho-grid zoho-grid-cols-4 zoho-mb-6">
+        <div class="zoho-metric zoho-fade-in">
+            <div class="zoho-metric-value">24</div>
+            <div class="zoho-metric-label">Open Tickets</div>
+            <div class="zoho-metric-change positive">
+                <i class="fas fa-arrow-up"></i>
+                +12% from last week
+            </div>
+        </div>
+        
+        <div class="zoho-metric zoho-fade-in">
+            <div class="zoho-metric-value">18</div>
+            <div class="zoho-metric-label">Resolved Today</div>
+            <div class="zoho-metric-change positive">
+                <i class="fas fa-arrow-up"></i>
+                +8% from yesterday
+            </div>
+        </div>
+        
+        <div class="zoho-metric zoho-fade-in">
+            <div class="zoho-metric-value">2.4h</div>
+            <div class="zoho-metric-label">Avg Response Time</div>
+            <div class="zoho-metric-change negative">
+                <i class="fas fa-arrow-down"></i>
+                -15% from last week
+            </div>
+        </div>
+        
+        <div class="zoho-metric zoho-fade-in">
+            <div class="zoho-metric-value">94%</div>
+            <div class="zoho-metric-label">Customer Satisfaction</div>
+            <div class="zoho-metric-change positive">
+                <i class="fas fa-arrow-up"></i>
+                +2% from last month
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="zoho-grid zoho-grid-cols-3">
+        <!-- Recent Tickets -->
+        <div class="zoho-card">
+            <div class="zoho-card-header">
+                <h3 class="zoho-card-title">Recent Tickets</h3>
+                <a href="/tickets/" class="zoho-btn zoho-btn-sm zoho-btn-secondary">View All</a>
+            </div>
+            <div class="zoho-card-body" style="padding: 0;">
+                <div class="zoho-table">
+                    <table class="zoho-table">
+                        <thead>
+                            <tr>
+                                <th>Ticket</th>
+                                <th>Customer</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="zoho-flex zoho-items-center zoho-gap-2">
+                                        <span class="zoho-font-semibold">#1234</span>
+                                        <span class="zoho-text-sm zoho-text-gray-600">Login Issue</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="zoho-flex zoho-items-center zoho-gap-2">
+                                        <div class="zoho-user-avatar" style="width: 24px; height: 24px; font-size: 10px;">JD</div>
+                                        <span class="zoho-text-sm">John Doe</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="zoho-badge zoho-badge-warning">Open</span>
+                                </td>
+                                <td>
+                                    <span class="zoho-badge zoho-badge-danger">High</span>
+                                </td>
+                                <td>
+                                    <span class="zoho-text-sm zoho-text-gray-600">2 hours ago</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="zoho-flex zoho-items-center zoho-gap-2">
+                                        <span class="zoho-font-semibold">#1233</span>
+                                        <span class="zoho-text-sm zoho-text-gray-600">Password Reset</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="zoho-flex zoho-items-center zoho-gap-2">
+                                        <div class="zoho-user-avatar" style="width: 24px; height: 24px; font-size: 10px;">SM</div>
+                                        <span class="zoho-text-sm">Sarah Miller</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="zoho-badge zoho-badge-success">Resolved</span>
+                                </td>
+                                <td>
+                                    <span class="zoho-badge zoho-badge-gray">Low</span>
+                                </td>
+                                <td>
+                                    <span class="zoho-text-sm zoho-text-gray-600">4 hours ago</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="zoho-flex zoho-items-center zoho-gap-2">
+                                        <span class="zoho-font-semibold">#1232</span>
+                                        <span class="zoho-text-sm zoho-text-gray-600">Feature Request</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="zoho-flex zoho-items-center zoho-gap-2">
+                                        <div class="zoho-user-avatar" style="width: 24px; height: 24px; font-size: 10px;">RJ</div>
+                                        <span class="zoho-text-sm">Robert Johnson</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="zoho-badge zoho-badge-primary">In Progress</span>
+                                </td>
+                                <td>
+                                    <span class="zoho-badge zoho-badge-warning">Medium</span>
+                                </td>
+                                <td>
+                                    <span class="zoho-text-sm zoho-text-gray-600">1 day ago</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Work Orders -->
+        <div class="zoho-card">
+            <div class="zoho-card-header">
+                <h3 class="zoho-card-title">Active Work Orders</h3>
+                <a href="/work-orders/" class="zoho-btn zoho-btn-sm zoho-btn-secondary">View All</a>
+            </div>
+            <div class="zoho-card-body" style="padding: 0;">
+                <div class="zoho-table">
+                    <table class="zoho-table">
+                        <thead>
+                            <tr>
+                                <th>Work Order</th>
+                                <th>Technician</th>
+                                <th>Status</th>
+                                <th>Scheduled</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="zoho-flex zoho-items-center zoho-gap-2">
+                                        <span class="zoho-font-semibold">#WO-001</span>
+                                        <span class="zoho-text-sm zoho-text-gray-600">Equipment Repair</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="zoho-flex zoho-items-center zoho-gap-2">
+                                        <div class="zoho-user-avatar" style="width: 24px; height: 24px; font-size: 10px;">MJ</div>
+                                        <span class="zoho-text-sm">Mike Johnson</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="zoho-badge zoho-badge-primary">In Progress</span>
+                                </td>
+                                <td>
+                                    <span class="zoho-text-sm zoho-text-gray-600">Today, 2:00 PM</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="zoho-flex zoho-items-center zoho-gap-2">
+                                        <span class="zoho-font-semibold">#WO-002</span>
+                                        <span class="zoho-text-sm zoho-text-gray-600">Installation</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="zoho-flex zoho-items-center zoho-gap-2">
+                                        <div class="zoho-user-avatar" style="width: 24px; height: 24px; font-size: 10px;">AS</div>
+                                        <span class="zoho-text-sm">Alex Smith</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="zoho-badge zoho-badge-warning">Scheduled</span>
+                                </td>
+                                <td>
+                                    <span class="zoho-text-sm zoho-text-gray-600">Tomorrow, 10:00 AM</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="zoho-card">
+            <div class="zoho-card-header">
+                <h3 class="zoho-card-title">System Status</h3>
+                <a href="/microservices/" class="zoho-btn zoho-btn-sm zoho-btn-secondary">View Details</a>
+            </div>
+            <div class="zoho-card-body">
+                <div class="zoho-space-y-4">
+                    <div class="zoho-flex zoho-items-center zoho-justify-between">
+                        <div class="zoho-flex zoho-items-center zoho-gap-3">
+                            <div class="zoho-status zoho-status-online">
+                                <div class="zoho-status-dot"></div>
+                                <span class="zoho-text-sm">API Services</span>
+                            </div>
+                        </div>
+                        <span class="zoho-text-sm zoho-text-gray-600">99.9% uptime</span>
+                    </div>
+                    
+                    <div class="zoho-flex zoho-items-center zoho-justify-between">
+                        <div class="zoho-flex zoho-items-center zoho-gap-3">
+                            <div class="zoho-status zoho-status-online">
+                                <div class="zoho-status-dot"></div>
+                                <span class="zoho-text-sm">Database</span>
+                            </div>
+                        </div>
+                        <span class="zoho-text-sm zoho-text-gray-600">99.8% uptime</span>
+                    </div>
+                    
+                    <div class="zoho-flex zoho-items-center zoho-justify-between">
+                        <div class="zoho-flex zoho-items-center zoho-gap-3">
+                            <div class="zoho-status zoho-status-online">
+                                <div class="zoho-status-dot"></div>
+                                <span class="zoho-text-sm">AI Services</span>
+                            </div>
+                        </div>
+                        <span class="zoho-text-sm zoho-text-gray-600">99.7% uptime</span>
+                    </div>
+                    
+                    <div class="zoho-flex zoho-items-center zoho-justify-between">
+                        <div class="zoho-flex zoho-items-center zoho-gap-3">
+                            <div class="zoho-status zoho-status-online">
+                                <div class="zoho-status-dot"></div>
+                                <span class="zoho-text-sm">Real-time Services</span>
+                            </div>
+                        </div>
+                        <span class="zoho-text-sm zoho-text-gray-600">99.9% uptime</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="zoho-grid zoho-grid-cols-2 zoho-mt-6">
+        <!-- Ticket Trends -->
+        <div class="zoho-card">
+            <div class="zoho-card-header">
+                <h3 class="zoho-card-title">Ticket Trends</h3>
+                <div class="zoho-flex zoho-gap-2">
+                    <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">7D</button>
+                    <button class="zoho-btn zoho-btn-sm zoho-btn-primary">30D</button>
+                    <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">90D</button>
+                </div>
+            </div>
+            <div class="zoho-card-body">
+                <canvas id="ticketTrendsChart" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- Ticket Status Distribution -->
+        <div class="zoho-card">
+            <div class="zoho-card-header">
+                <h3 class="zoho-card-title">Ticket Status</h3>
+            </div>
+            <div class="zoho-card-body">
+                <canvas id="ticketStatusChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="zoho-card zoho-mt-6">
+        <div class="zoho-card-header">
+            <h3 class="zoho-card-title">Quick Actions</h3>
+        </div>
+        <div class="zoho-card-body">
+            <div class="zoho-grid zoho-grid-cols-4">
+                <button class="zoho-btn zoho-btn-primary zoho-flex zoho-flex-col zoho-items-center zoho-gap-2" style="padding: var(--zoho-space-6);">
+                    <i class="fas fa-plus" style="font-size: 1.5rem;"></i>
+                    <span>New Ticket</span>
+                </button>
+                
+                <button class="zoho-btn zoho-btn-success zoho-flex zoho-flex-col zoho-items-center zoho-gap-2" style="padding: var(--zoho-space-6);">
+                    <i class="fas fa-wrench" style="font-size: 1.5rem;"></i>
+                    <span>New Work Order</span>
+                </button>
+                
+                <button class="zoho-btn zoho-btn-info zoho-flex zoho-flex-col zoho-items-center zoho-gap-2" style="padding: var(--zoho-space-6);">
+                    <i class="fas fa-book" style="font-size: 1.5rem;"></i>
+                    <span>KB Article</span>
+                </button>
+                
+                <button class="zoho-btn zoho-btn-warning zoho-flex zoho-flex-col zoho-items-center zoho-gap-2" style="padding: var(--zoho-space-6);">
+                    <i class="fas fa-user-tie" style="font-size: 1.5rem;"></i>
+                    <span>Add Technician</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function dashboardApp() {
+    return {
+        // Initialize charts when component mounts
+        init() {
+            this.initTicketTrendsChart();
+            this.initTicketStatusChart();
+        },
+        
+        initTicketTrendsChart() {
+            const ctx = document.getElementById('ticketTrendsChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Tickets Created',
+                            data: [12, 19, 15, 25, 22, 18, 24],
+                            borderColor: 'var(--zoho-primary)',
+                            backgroundColor: 'rgba(46, 134, 171, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }, {
+                            label: 'Tickets Resolved',
+                            data: [8, 15, 12, 20, 18, 14, 19],
+                            borderColor: 'var(--zoho-success)',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        },
+        
+        initTicketStatusChart() {
+            const ctx = document.getElementById('ticketStatusChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Open', 'In Progress', 'Resolved', 'Closed'],
+                        datasets: [{
+                            data: [24, 12, 18, 6],
+                            backgroundColor: [
+                                'var(--zoho-warning)',
+                                'var(--zoho-primary)',
+                                'var(--zoho-success)',
+                                'var(--zoho-gray-400)'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    }
+}
+
+// Initialize dashboard when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.Alpine) {
+        Alpine.data('dashboardApp', dashboardApp);
+    }
+});
+</script>
+{% endblock %}

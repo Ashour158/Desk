@@ -1,0 +1,354 @@
+{% extends "base_zoho.html" %}
+{% load static %}
+
+{% block title %}Tickets - HelpDesk Platform{% endblock %}
+
+{% block breadcrumb %}Tickets{% endblock %}
+
+{% block content %}
+<div x-data="ticketsApp()">
+    <!-- Page Header -->
+    <div class="zoho-page-header">
+        <h1 class="zoho-page-title">Tickets</h1>
+        <div class="zoho-page-actions">
+            <div class="zoho-flex zoho-gap-3">
+                <div class="zoho-search">
+                    <i class="fas fa-search zoho-search-icon"></i>
+                    <input type="text" class="zoho-search-input" placeholder="Search tickets..." x-model="searchQuery" @input="handleSearch()">
+                </div>
+                <select class="zoho-form-control" style="width: auto;" x-model="selectedFilter" @change="handleFilter()">
+                    <option value="">All Tickets</option>
+                    <option value="open">Open</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="closed">Closed</option>
+                </select>
+                <button class="zoho-btn zoho-btn-secondary">
+                    <i class="fas fa-filter"></i>
+                    Filters
+                </button>
+                <button class="zoho-btn zoho-btn-primary">
+                    <i class="fas fa-plus"></i>
+                    New Ticket
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="zoho-card zoho-mb-6">
+        <div class="zoho-card-body">
+            <div class="zoho-flex zoho-items-center zoho-justify-between">
+                <div class="zoho-flex zoho-items-center zoho-gap-4">
+                    <div class="zoho-flex zoho-items-center zoho-gap-2">
+                        <span class="zoho-text-sm zoho-text-gray-600">Status:</span>
+                        <div class="zoho-flex zoho-gap-2">
+                            <button class="zoho-btn zoho-btn-sm zoho-btn-primary">All (156)</button>
+                            <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">Open (24)</button>
+                            <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">In Progress (12)</button>
+                            <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">Resolved (18)</button>
+                            <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">Closed (102)</button>
+                        </div>
+                    </div>
+                    
+                    <div class="zoho-flex zoho-items-center zoho-gap-2">
+                        <span class="zoho-text-sm zoho-text-gray-600">Priority:</span>
+                        <div class="zoho-flex zoho-gap-2">
+                            <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">All</button>
+                            <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">High (8)</button>
+                            <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">Medium (15)</button>
+                            <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">Low (1)</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="zoho-flex zoho-items-center zoho-gap-2">
+                    <span class="zoho-text-sm zoho-text-gray-600">Sort by:</span>
+                    <select class="zoho-form-control" style="width: auto;">
+                        <option>Created Date</option>
+                        <option>Priority</option>
+                        <option>Status</option>
+                        <option>Customer</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tickets Table -->
+    <div class="zoho-card">
+        <div class="zoho-card-body" style="padding: 0;">
+            <div class="zoho-table">
+                <table class="zoho-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">
+                                <input type="checkbox" class="zoho-form-control" style="width: auto;">
+                            </th>
+                            <th>Ticket</th>
+                            <th>Customer</th>
+                            <th>Agent</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="zoho-form-control" style="width: auto;">
+                            </td>
+                            <td>
+                                <div class="zoho-flex zoho-items-center zoho-gap-3">
+                                    <div class="zoho-user-avatar" style="width: 32px; height: 32px; background-color: var(--zoho-primary);">
+                                        <i class="fas fa-ticket-alt" style="color: white; font-size: 12px;"></i>
+                                    </div>
+                                    <div>
+                                        <div class="zoho-font-semibold">#1234</div>
+                                        <div class="zoho-text-sm zoho-text-gray-600">Login Issue - Cannot access account</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="zoho-flex zoho-items-center zoho-gap-2">
+                                    <div class="zoho-user-avatar" style="width: 24px; height: 24px; font-size: 10px;">JD</div>
+                                    <div>
+                                        <div class="zoho-text-sm zoho-font-semibold">John Doe</div>
+                                        <div class="zoho-text-xs zoho-text-gray-600">john.doe@company.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="zoho-flex zoho-items-center zoho-gap-2">
+                                    <div class="zoho-user-avatar" style="width: 24px; height: 24px; font-size: 10px;">SM</div>
+                                    <div>
+                                        <div class="zoho-text-sm zoho-font-semibold">Sarah Miller</div>
+                                        <div class="zoho-text-xs zoho-text-gray-600">Support Agent</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="zoho-badge zoho-badge-warning">Open</span>
+                            </td>
+                            <td>
+                                <span class="zoho-badge zoho-badge-danger">High</span>
+                            </td>
+                            <td>
+                                <div class="zoho-text-sm">2 hours ago</div>
+                                <div class="zoho-text-xs zoho-text-gray-600">Dec 15, 2023</div>
+                            </div>
+                            <td>
+                                <div class="zoho-flex zoho-gap-2">
+                                    <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <div class="zoho-dropdown">
+                                        <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <div class="zoho-dropdown-menu">
+                                            <a href="#" class="zoho-dropdown-item">Assign</a>
+                                            <a href="#" class="zoho-dropdown-item">Merge</a>
+                                            <a href="#" class="zoho-dropdown-item">Close</a>
+                                            <div class="zoho-dropdown-divider"></div>
+                                            <a href="#" class="zoho-dropdown-item zoho-text-danger">Delete</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="zoho-form-control" style="width: auto;">
+                            </td>
+                            <td>
+                                <div class="zoho-flex zoho-items-center zoho-gap-3">
+                                    <div class="zoho-user-avatar" style="width: 32px; height: 32px; background-color: var(--zoho-success);">
+                                        <i class="fas fa-ticket-alt" style="color: white; font-size: 12px;"></i>
+                                    </div>
+                                    <div>
+                                        <div class="zoho-font-semibold">#1233</div>
+                                        <div class="zoho-text-sm zoho-text-gray-600">Password Reset Request</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="zoho-flex zoho-items-center zoho-gap-2">
+                                    <div class="zoho-user-avatar" style="width: 24px; height: 24px; font-size: 10px;">SM</div>
+                                    <div>
+                                        <div class="zoho-text-sm zoho-font-semibold">Sarah Miller</div>
+                                        <div class="zoho-text-xs zoho-text-gray-600">sarah.miller@company.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="zoho-flex zoho-items-center zoho-gap-2">
+                                    <div class="zoho-user-avatar" style="width: 24px; height: 24px; font-size: 10px;">RJ</div>
+                                    <div>
+                                        <div class="zoho-text-sm zoho-font-semibold">Robert Johnson</div>
+                                        <div class="zoho-text-xs zoho-text-gray-600">Support Agent</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="zoho-badge zoho-badge-success">Resolved</span>
+                            </td>
+                            <td>
+                                <span class="zoho-badge zoho-badge-gray">Low</span>
+                            </td>
+                            <td>
+                                <div class="zoho-text-sm">4 hours ago</div>
+                                <div class="zoho-text-xs zoho-text-gray-600">Dec 15, 2023</div>
+                            </div>
+                            <td>
+                                <div class="zoho-flex zoho-gap-2">
+                                    <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <div class="zoho-dropdown">
+                                        <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <div class="zoho-dropdown-menu">
+                                            <a href="#" class="zoho-dropdown-item">Reopen</a>
+                                            <a href="#" class="zoho-dropdown-item">Merge</a>
+                                            <a href="#" class="zoho-dropdown-item">Archive</a>
+                                            <div class="zoho-dropdown-divider"></div>
+                                            <a href="#" class="zoho-dropdown-item zoho-text-danger">Delete</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="zoho-form-control" style="width: auto;">
+                            </td>
+                            <td>
+                                <div class="zoho-flex zoho-items-center zoho-gap-3">
+                                    <div class="zoho-user-avatar" style="width: 32px; height: 32px; background-color: var(--zoho-primary);">
+                                        <i class="fas fa-ticket-alt" style="color: white; font-size: 12px;"></i>
+                                    </div>
+                                    <div>
+                                        <div class="zoho-font-semibold">#1232</div>
+                                        <div class="zoho-text-sm zoho-text-gray-600">Feature Request - Dark Mode</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="zoho-flex zoho-items-center zoho-gap-2">
+                                    <div class="zoho-user-avatar" style="width: 24px; height: 24px; font-size: 10px;">RJ</div>
+                                    <div>
+                                        <div class="zoho-text-sm zoho-font-semibold">Robert Johnson</div>
+                                        <div class="zoho-text-xs zoho-text-gray-600">robert.johnson@company.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="zoho-flex zoho-items-center zoho-gap-2">
+                                    <div class="zoho-user-avatar" style="width: 24px; height: 24px; font-size: 10px;">MJ</div>
+                                    <div>
+                                        <div class="zoho-text-sm zoho-font-semibold">Mike Johnson</div>
+                                        <div class="zoho-text-xs zoho-text-gray-600">Product Manager</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="zoho-badge zoho-badge-primary">In Progress</span>
+                            </td>
+                            <td>
+                                <span class="zoho-badge zoho-badge-warning">Medium</span>
+                            </td>
+                            <td>
+                                <div class="zoho-text-sm">1 day ago</div>
+                                <div class="zoho-text-xs zoho-text-gray-600">Dec 14, 2023</div>
+                            </div>
+                            <td>
+                                <div class="zoho-flex zoho-gap-2">
+                                    <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <div class="zoho-dropdown">
+                                        <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <div class="zoho-dropdown-menu">
+                                            <a href="#" class="zoho-dropdown-item">Assign</a>
+                                            <a href="#" class="zoho-dropdown-item">Merge</a>
+                                            <a href="#" class="zoho-dropdown-item">Close</a>
+                                            <div class="zoho-dropdown-divider"></div>
+                                            <a href="#" class="zoho-dropdown-item zoho-text-danger">Delete</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="zoho-card-footer">
+            <div class="zoho-flex zoho-items-center zoho-justify-between">
+                <div class="zoho-text-sm zoho-text-gray-600">
+                    Showing 1-10 of 156 tickets
+                </div>
+                <div class="zoho-flex zoho-items-center zoho-gap-2">
+                    <button class="zoho-btn zoho-btn-sm zoho-btn-secondary" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="zoho-btn zoho-btn-sm zoho-btn-primary">1</button>
+                    <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">2</button>
+                    <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">3</button>
+                    <span class="zoho-text-sm zoho-text-gray-600">...</span>
+                    <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">16</button>
+                    <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function ticketsApp() {
+    return {
+        searchQuery: '',
+        selectedFilter: '',
+        
+        handleSearch() {
+            if (this.searchQuery.length > 2) {
+                console.log('Searching tickets for:', this.searchQuery);
+                // Implement search functionality
+            }
+        },
+        
+        handleFilter() {
+            console.log('Filtering tickets by:', this.selectedFilter);
+            // Implement filter functionality
+        }
+    }
+}
+
+// Initialize tickets app when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.Alpine) {
+        Alpine.data('ticketsApp', ticketsApp);
+    }
+});
+</script>
+{% endblock %}

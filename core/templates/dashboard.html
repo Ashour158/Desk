@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Helpdesk Platform{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div id="dashboard-stats">
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="metric-card fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Open Tickets</h6>
+                        <h3 class="mb-0" id="open-tickets">
+                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                        </h3>
+                    </div>
+                    <div class="text-primary">
+                        <i class="fas fa-ticket-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="metric-card success fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Resolved Today</h6>
+                        <h3 class="mb-0" id="resolved-today">
+                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                        </h3>
+                    </div>
+                    <div class="text-success">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="metric-card info fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Active Work Orders</h6>
+                        <h3 class="mb-0" id="active-work-orders">
+                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                        </h3>
+                    </div>
+                    <div class="text-info">
+                        <i class="fas fa-wrench fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="metric-card warning fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">SLA Breaches</h6>
+                        <h3 class="mb-0" id="sla-breaches">
+                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                        </h3>
+                    </div>
+                    <div class="text-warning">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Row -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="chart-container fade-in">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Ticket Trends</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-calendar me-1"></i>
+                            Last 7 days
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Last 7 days</a></li>
+                            <li><a class="dropdown-item" href="#">Last 30 days</a></li>
+                            <li><a class="dropdown-item" href="#">Last 90 days</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <canvas id="ticketTrendsChart" height="300"></canvas>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="chart-container fade-in">
+                <h5 class="mb-3">Ticket Status</h5>
+                <canvas id="ticketStatusChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card fade-in">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-ticket-alt me-2"></i>
+                        Recent Tickets
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Ticket</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-tickets">
+                                <tr>
+                                    <td colspan="4" class="text-center py-4">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                        Loading...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card fade-in">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-wrench me-2"></i>
+                        Recent Work Orders
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Work Order</th>
+                                    <th>Status</th>
+                                    <th>Technician</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-work-orders">
+                                <tr>
+                                    <td colspan="4" class="text-center py-4">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                        Loading...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card fade-in">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <a href="{% url 'ticket_create' %}" class="btn btn-primary w-100 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-plus me-2"></i>
+                            New Ticket
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'work_order_create' %}" class="btn btn-success w-100 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-wrench me-2"></i>
+                            New Work Order
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'kb_article_create' %}" class="btn btn-info w-100 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-book me-2"></i>
+                            New KB Article
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'technician_create' %}" class="btn btn-warning w-100 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-user-tie me-2"></i>
+                            Add Technician
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Load dashboard data
+    function loadDashboardData() {
+        htmx.ajax('GET', '/api/v1/dashboard/stats/', {
+            target: '#dashboard-stats',
+            swap: 'innerHTML'
+        });
+    }
+    
+    // Initialize charts
+    function initializeCharts() {
+        // Ticket Trends Chart
+        const ticketTrendsCtx = document.getElementById('ticketTrendsChart').getContext('2d');
+        new Chart(ticketTrendsCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Tickets Created',
+                    data: [12, 19, 3, 5, 2, 3, 7],
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }, {
+                    label: 'Tickets Resolved',
+                    data: [8, 15, 2, 4, 1, 2, 5],
+                    borderColor: 'rgb(255, 99, 132)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+        
+        // Ticket Status Chart
+        const ticketStatusCtx = document.getElementById('ticketStatusChart').getContext('2d');
+        new Chart(ticketStatusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Open', 'In Progress', 'Resolved', 'Closed'],
+                datasets: [{
+                    data: [12, 19, 3, 5],
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+    
+    // Load data on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadDashboardData();
+        initializeCharts();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,75 @@
+{
+  "name": "helpdesk-customer-portal",
+  "version": "1.0.0",
+  "description": "Customer portal for helpdesk platform",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@sentry/react": "^10.19.0",
+    "@tailwindcss/postcss": "^4.1.14",
+    "@tanstack/react-query": "^5.0.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.5.1",
+    "autoprefixer": "^10.4.16",
+    "axios": "^1.6.2",
+    "clsx": "^2.0.0",
+    "date-fns": "^4.1.0",
+    "lucide-react": "^0.545.0",
+    "postcss": "^8.4.32",
+    "prop-types": "^15.8.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-hook-form": "^7.48.2",
+    "react-hot-toast": "^2.4.1",
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.9.4",
+    "react-syntax-highlighter": "^15.6.6",
+    "socket.io-client": "^4.7.4",
+    "tailwindcss": "^3.4.18",
+    "web-vitals": "^5.1.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "start": "vite",
+    "build": "tsc && vite build",
+    "build:analyze": "vite build --mode analyze",
+    "build:report": "vite build --mode analyze && open dist/bundle-analysis.html",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "type-check": "tsc --noEmit",
+    "bundle:analyze": "npm run build:analyze",
+    "bundle:size": "npm run build && npx vite-bundle-analyzer dist"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react": "^4.3.0",
+    "eslint": "^9.37.0",
+    "jest-axe": "^10.0.0",
+    "postcss": "^8.4.32",
+    "prettier": "^3.6.2",
+    "rollup-plugin-visualizer": "^5.12.0",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.0",
+    "vite-plugin-eslint": "^1.8.1",
+    "vite-plugin-pwa": "^0.21.0"
+  },
+  "proxy": "http://localhost:8000"
+}

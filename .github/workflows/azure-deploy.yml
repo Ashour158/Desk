@@ -1,0 +1,132 @@
+name: Deploy to Azure AKS
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  AZURE_REGION: East US
+  AKS_CLUSTER_NAME: helpdesk-cluster
+  ACR_NAME: helpdeskproductionacr
+  RESOURCE_GROUP: helpdesk-production-rg
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        cd core
+        pip install -r requirements.txt
+        pip install pytest pytest-django pytest-cov
+    
+    - name: Run tests
+      run: |
+        cd core
+        python manage.py test --settings=config.settings.test
+        pytest --cov=apps --cov-report=xml
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./core/coverage.xml
+
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: Login to Azure Container Registry
+      run: |
+        az acr login --name ${{ env.ACR_NAME }}
+    
+    - name: Build and push Django image
+      run: |
+        cd core
+        docker build -t ${{ env.ACR_NAME }}.azurecr.io/helpdesk-django:${{ github.sha }} .
+        docker build -t ${{ env.ACR_NAME }}.azurecr.io/helpdesk-django:latest .
+        docker push ${{ env.ACR_NAME }}.azurecr.io/helpdesk-django:${{ github.sha }}
+        docker push ${{ env.ACR_NAME }}.azurecr.io/helpdesk-django:latest
+    
+    - name: Build and push AI service image
+      run: |
+        cd ai-service
+        docker build -t ${{ env.ACR_NAME }}.azurecr.io/helpdesk-ai:${{ github.sha }} .
+        docker build -t ${{ env.ACR_NAME }}.azurecr.io/helpdesk-ai:latest .
+        docker push ${{ env.ACR_NAME }}.azurecr.io/helpdesk-ai:${{ github.sha }}
+        docker push ${{ env.ACR_NAME }}.azurecr.io/helpdesk-ai:latest
+    
+    - name: Build and push Realtime service image
+      run: |
+        cd realtime-service
+        docker build -t ${{ env.ACR_NAME }}.azurecr.io/helpdesk-realtime:${{ github.sha }} .
+        docker build -t ${{ env.ACR_NAME }}.azurecr.io/helpdesk-realtime:latest .
+        docker push ${{ env.ACR_NAME }}.azurecr.io/helpdesk-realtime:${{ github.sha }}
+        docker push ${{ env.ACR_NAME }}.azurecr.io/helpdesk-realtime:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: Get AKS credentials
+      run: |
+        az aks get-credentials --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.AKS_CLUSTER_NAME }}
+    
+    - name: Deploy to AKS
+      run: |
+        # Update image tags in Kubernetes manifests
+        sed -i "s|your-registry/helpdesk-django:latest|${{ env.ACR_NAME }}.azurecr.io/helpdesk-django:${{ github.sha }}|g" azure-infrastructure/k8s/*.yaml
+        sed -i "s|your-registry/helpdesk-ai:latest|${{ env.ACR_NAME }}.azurecr.io/helpdesk-ai:${{ github.sha }}|g" azure-infrastructure/k8s/*.yaml
+        sed -i "s|your-registry/helpdesk-realtime:latest|${{ env.ACR_NAME }}.azurecr.io/helpdesk-realtime:${{ github.sha }}|g" azure-infrastructure/k8s/*.yaml
+        
+        # Apply Kubernetes manifests
+        kubectl apply -f azure-infrastructure/k8s/namespace.yaml
+        kubectl apply -f azure-infrastructure/k8s/azure-configmap.yaml
+        kubectl apply -f azure-infrastructure/k8s/azure-secrets.yaml
+        kubectl apply -f azure-infrastructure/k8s/django-deployment.yaml
+        kubectl apply -f azure-infrastructure/k8s/ai-service-deployment.yaml
+        kubectl apply -f azure-infrastructure/k8s/realtime-service-deployment.yaml
+        kubectl apply -f azure-infrastructure/k8s/celery-deployment.yaml
+        kubectl apply -f azure-infrastructure/k8s/ingress.yaml
+    
+    - name: Wait for deployment
+      run: |
+        kubectl rollout status deployment/django-app -n helpdesk --timeout=300s
+        kubectl rollout status deployment/ai-service -n helpdesk --timeout=300s
+        kubectl rollout status deployment/realtime-service -n helpdesk --timeout=300s
+        kubectl rollout status deployment/celery-worker -n helpdesk --timeout=300s
+        kubectl rollout status deployment/celery-beat -n helpdesk --timeout=300s
+    
+    - name: Run database migrations
+      run: |
+        kubectl exec -n helpdesk deployment/django-app -- python manage.py migrate
+    
+    - name: Collect static files
+      run: |
+        kubectl exec -n helpdesk deployment/django-app -- python manage.py collectstatic --noinput

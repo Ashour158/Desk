@@ -1,0 +1,384 @@
+{% extends 'base.html' %}
+
+{% block title %}Security Dashboard - Helpdesk Platform{% endblock %}
+{% block page_title %}Security Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .security-card {
+        border-left: 4px solid;
+        transition: all 0.3s ease;
+    }
+    .security-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .security-card.critical { border-left-color: #dc3545; }
+    .security-card.warning { border-left-color: #ffc107; }
+    .security-card.success { border-left-color: #28a745; }
+    .security-card.info { border-left-color: #17a2b8; }
+    
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+    
+    .metric-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .security-event {
+        border-left: 3px solid;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 0 0.375rem 0.375rem 0;
+    }
+    
+    .security-event.critical { border-left-color: #dc3545; }
+    .security-event.high { border-left-color: #fd7e14; }
+    .security-event.medium { border-left-color: #ffc107; }
+    .security-event.low { border-left-color: #6c757d; }
+    
+    .device-trust-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.375rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .device-trust-badge.trusted { background: #d4edda; color: #155724; }
+    .device-trust-badge.suspicious { background: #fff3cd; color: #856404; }
+    .device-trust-badge.blocked { background: #f8d7da; color: #721c24; }
+    .device-trust-badge.unknown { background: #e2e3e5; color: #383d41; }
+    
+    .compliance-progress {
+        height: 8px;
+        border-radius: 4px;
+        background: #e9ecef;
+        overflow: hidden;
+    }
+    
+    .compliance-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #28a745, #20c997);
+        transition: width 0.6s ease;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+    }
+    
+    .security-alert {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .security-alert .alert-icon {
+        font-size: 1.5rem;
+        margin-right: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Security Alerts -->
+{% if critical_events > 0 %}
+<div class="security-alert">
+    <div class="d-flex align-items-center">
+        <i class="fas fa-exclamation-triangle alert-icon"></i>
+        <div>
+            <h6 class="mb-1">Critical Security Events</h6>
+            <p class="mb-0">You have {{ critical_events }} critical security event{{ critical_events|pluralize }} that require immediate attention.</p>
+        </div>
+        <div class="ms-auto">
+            <a href="{% url 'security_events' %}?severity=critical" class="btn btn-light btn-sm">
+                <i class="fas fa-eye me-1"></i>
+                View Events
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Security Metrics -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card security-card critical h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="metric-label text-uppercase text-muted mb-1">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Total Events
+                        </div>
+                        <div class="metric-value text-gray-800">{{ total_events }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-shield-alt fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card security-card warning h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="metric-label text-uppercase text-muted mb-1">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            Critical Events
+                        </div>
+                        <div class="metric-value text-gray-800">{{ critical_events }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card security-card success h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="metric-label text-uppercase text-muted mb-1">
+                            <i class="fas fa-check-circle me-1"></i>
+                            Trusted Devices
+                        </div>
+                        <div class="metric-value text-gray-800">{{ trusted_devices }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card security-card info h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="metric-label text-uppercase text-muted mb-1">
+                            <i class="fas fa-chart-line me-1"></i>
+                            API Requests (7d)
+                        </div>
+                        <div class="metric-value text-gray-800">{{ api_usage }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="row">
+    <!-- Recent Security Events -->
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Recent Security Events
+                </h6>
+                <a href="{% url 'security_events' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-eye me-1"></i>
+                    View All
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_events %}
+                    {% for event in recent_events %}
+                    <div class="security-event {{ event.severity }}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">{{ event.title }}</h6>
+                                <p class="mb-1 text-muted">{{ event.description }}</p>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ event.created_at|timesince }} ago
+                                    <span class="ms-3">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        {{ event.location|default:"Unknown" }}
+                                    </span>
+                                </small>
+                            </div>
+                            <div class="ms-3">
+                                <span class="badge badge-{{ event.severity }}">{{ event.get_severity_display }}</span>
+                                {% if not event.is_resolved %}
+                                <button class="btn btn-sm btn-outline-success ms-2" 
+                                        hx-post="{% url 'resolve_security_event' event.id %}"
+                                        hx-target="this"
+                                        hx-swap="outerHTML">
+                                    <i class="fas fa-check me-1"></i>
+                                    Resolve
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-shield-alt fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Recent Security Events</h5>
+                        <p class="text-muted">Your system is secure with no recent security events.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Device Trust & Compliance -->
+    <div class="col-lg-4">
+        <!-- Device Trust Status -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-mobile-alt me-2"></i>
+                    Device Trust Status
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="metric-value text-success">{{ trusted_devices }}</div>
+                        <div class="metric-label text-muted">Trusted</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="metric-value text-warning">{{ suspicious_devices }}</div>
+                        <div class="metric-label text-muted">Suspicious</div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <a href="{% url 'device_trust' %}" class="btn btn-sm btn-outline-primary w-100">
+                        <i class="fas fa-cog me-1"></i>
+                        Manage Devices
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Compliance Status -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-clipboard-check me-2"></i>
+                    Compliance Status
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if compliance_audits %}
+                    {% for audit in compliance_audits %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h6 class="mb-1">{{ audit.framework|upper }}</h6>
+                            <small class="text-muted">{{ audit.audit_type }}</small>
+                        </div>
+                        <div class="text-end">
+                            <div class="compliance-progress mb-1">
+                                <div class="compliance-progress-bar" style="width: {{ audit.score|default:0 }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ audit.score|default:0 }}/{{ audit.max_score }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-clipboard-check fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">No compliance audits</p>
+                    </div>
+                {% endif %}
+                <div class="mt-3">
+                    <a href="{% url 'compliance_audits' %}" class="btn btn-sm btn-outline-primary w-100">
+                        <i class="fas fa-plus me-1"></i>
+                        Manage Audits
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-bolt me-2"></i>
+                    Quick Actions
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'security_policies' %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-shield-alt me-2"></i>
+                            Security Policies
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'sso_configuration' %}" class="btn btn-outline-info w-100">
+                            <i class="fas fa-sign-in-alt me-2"></i>
+                            SSO Configuration
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'security_scans' %}" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-search me-2"></i>
+                            Security Scans
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'api_access_logs' %}" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-list me-2"></i>
+                            API Logs
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh security metrics
+    function refreshSecurityMetrics() {
+        htmx.ajax('GET', '/api/v1/security/metrics/', {
+            target: '#security-metrics',
+            swap: 'innerHTML'
+        });
+    }
+    
+    // Refresh every 30 seconds
+    setInterval(refreshSecurityMetrics, 30000);
+    
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+</script>
+{% endblock %}

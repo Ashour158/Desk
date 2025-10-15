@@ -1,0 +1,31 @@
+{
+  "name": "helpdesk-realtime-service",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Real-time service for helpdesk platform",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "axios": "^1.6.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "redis": "^5.8.3",
+    "socket.io": "^4.7.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.37.0",
+    "eslint": "^9.37.0",
+    "jest": "^30.2.0",
+    "nodemon": "^3.0.2",
+    "prettier": "^3.6.2",
+    "winston": "^3.18.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

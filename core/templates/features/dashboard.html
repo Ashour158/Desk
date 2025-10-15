@@ -1,0 +1,415 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}All Features{% endblock %}
+
+{% block content %}
+<div class="container-fluid" x-data="featuresDashboard()">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-th-large me-2"></i>
+                        All Features
+                    </h1>
+                    <p class="text-muted">Access all available features based on your permissions</p>
+                </div>
+                <div>
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-outline-primary" @click="viewMode = 'grid'" :class="{ 'active': viewMode === 'grid' }">
+                            <i class="fas fa-th"></i> Grid
+                        </button>
+                        <button class="btn btn-outline-primary" @click="viewMode = 'list'" :class="{ 'active': viewMode === 'list' }">
+                            <i class="fas fa-list"></i> List
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input type="text" class="form-control" placeholder="Search features..." x-model="searchQuery" @input="filterFeatures()">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <select class="form-select" x-model="selectedCategory" @change="filterFeatures()">
+                <option value="">All Categories</option>
+                <option value="core">Core Features</option>
+                <option value="ai">AI & ML</option>
+                <option value="analytics">Analytics</option>
+                <option value="integration">Integration</option>
+                <option value="mobile">Mobile & IoT</option>
+                <option value="security">Security</option>
+                <option value="workflow">Workflow</option>
+                <option value="communication">Communication</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="row" x-show="viewMode === 'grid'">
+        <!-- Core Features -->
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4" x-show="hasPermission('tickets')">
+            <div class="feature-card primary" @click="navigateToFeature('tickets')">
+                <div class="feature-icon">
+                    <i class="fas fa-ticket-alt"></i>
+                </div>
+                <h5>Ticket Management</h5>
+                <p class="text-muted">Create, track, and manage support tickets</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-primary">Core</span>
+                    <small class="text-muted">5 active</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4" x-show="hasPermission('work_orders')">
+            <div class="feature-card success" @click="navigateToFeature('work-orders')">
+                <div class="feature-icon">
+                    <i class="fas fa-wrench"></i>
+                </div>
+                <h5>Work Orders</h5>
+                <p class="text-muted">Field service management and scheduling</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-success">Core</span>
+                    <small class="text-muted">3 pending</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4" x-show="hasPermission('technicians')">
+            <div class="feature-card info" @click="navigateToFeature('technicians')">
+                <div class="feature-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <h5>Technician Management</h5>
+                <p class="text-muted">Manage field technicians and their schedules</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-info">Core</span>
+                    <small class="text-muted">12 active</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4" x-show="hasPermission('knowledge_base')">
+            <div class="feature-card warning" @click="navigateToFeature('knowledge-base')">
+                <div class="feature-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <h5>Knowledge Base</h5>
+                <p class="text-muted">Create and manage help articles</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-warning">Core</span>
+                    <small class="text-muted">45 articles</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI & ML Features -->
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4" x-show="hasPermission('ai_ml')">
+            <div class="feature-card primary" @click="navigateToFeature('ai-ml')">
+                <div class="feature-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h5>AI & Machine Learning</h5>
+                <p class="text-muted">Smart categorization, sentiment analysis, and automation</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-primary">AI</span>
+                    <small class="text-muted">Active</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4" x-show="hasPermission('customer_experience')">
+            <div class="feature-card success" @click="navigateToFeature('customer-experience')">
+                <div class="feature-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <h5>Customer Experience</h5>
+                <p class="text-muted">Journey mapping, personalization, and health scoring</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-success">CX</span>
+                    <small class="text-muted">Enhanced</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Features -->
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4" x-show="hasPermission('analytics')">
+            <div class="feature-card info" @click="navigateToFeature('analytics')">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h5>Advanced Analytics</h5>
+                <p class="text-muted">Custom reports, dashboards, and business intelligence</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-info">Analytics</span>
+                    <small class="text-muted">Real-time</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Integration Features -->
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4" x-show="hasPermission('integrations')">
+            <div class="feature-card warning" @click="navigateToFeature('integrations')">
+                <div class="feature-icon">
+                    <i class="fas fa-plug"></i>
+                </div>
+                <h5>Integration Platform</h5>
+                <p class="text-muted">Connect with external services and APIs</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-warning">Integration</span>
+                    <small class="text-muted">500+ connectors</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile & IoT Features -->
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4" x-show="hasPermission('mobile_iot')">
+            <div class="feature-card primary" @click="navigateToFeature('mobile-iot')">
+                <div class="feature-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h5>Mobile & IoT Platform</h5>
+                <p class="text-muted">Mobile apps, IoT devices, and location tracking</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-primary">Mobile</span>
+                    <small class="text-muted">Offline-ready</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Features -->
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4" x-show="hasPermission('security')">
+            <div class="feature-card success" @click="navigateToFeature('security')">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h5>Advanced Security</h5>
+                <p class="text-muted">Threat detection, audit logs, and compliance</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-success">Security</span>
+                    <small class="text-muted">Enterprise</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Workflow Features -->
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4" x-show="hasPermission('workflow')">
+            <div class="feature-card info" @click="navigateToFeature('workflow')">
+                <div class="feature-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <h5>Advanced Workflow</h5>
+                <p class="text-muted">Process automation and intelligent workflows</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-info">Workflow</span>
+                    <small class="text-muted">Automated</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Communication Features -->
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4" x-show="hasPermission('communication')">
+            <div class="feature-card warning" @click="navigateToFeature('communication')">
+                <div class="feature-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h5>Advanced Communication</h5>
+                <p class="text-muted">Multi-channel communication and video conferencing</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-warning">Communication</span>
+                    <small class="text-muted">Multi-channel</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Core Features -->
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4" x-show="hasPermission('reports')">
+            <div class="feature-card primary" @click="navigateToFeature('reports')">
+                <div class="feature-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <h5>Reports & Analytics</h5>
+                <p class="text-muted">Generate custom reports and analytics</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-primary">Reports</span>
+                    <small class="text-muted">Custom</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4" x-show="hasPermission('user_management')">
+            <div class="feature-card success" @click="navigateToFeature('users')">
+                <div class="feature-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h5>User Management</h5>
+                <p class="text-muted">Manage users, roles, and permissions</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-success">Admin</span>
+                    <small class="text-muted">25 users</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4" x-show="hasPermission('settings')">
+            <div class="feature-card info" @click="navigateToFeature('settings')">
+                <div class="feature-icon">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <h5>System Settings</h5>
+                <p class="text-muted">Configure system preferences and integrations</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-info">Settings</span>
+                    <small class="text-muted">Configured</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features List View -->
+    <div class="row" x-show="viewMode === 'list'">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>Category</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr x-show="hasPermission('tickets')">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-ticket-alt text-primary me-3"></i>
+                                            <div>
+                                                <div class="fw-bold">Ticket Management</div>
+                                                <small class="text-muted">Core Feature</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-primary">Core</span></td>
+                                    <td>Create, track, and manage support tickets</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" @click="navigateToFeature('tickets')">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr x-show="hasPermission('work_orders')">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-wrench text-success me-3"></i>
+                                            <div>
+                                                <div class="fw-bold">Work Orders</div>
+                                                <small class="text-muted">Field Service</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-success">Core</span></td>
+                                    <td>Field service management and scheduling</td>
+                                    <td><span class="badge bg-warning">3 Pending</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" @click="navigateToFeature('work-orders')">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr x-show="hasPermission('ai_ml')">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-brain text-primary me-3"></i>
+                                            <div>
+                                                <div class="fw-bold">AI & Machine Learning</div>
+                                                <small class="text-muted">Advanced Feature</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-primary">AI</span></td>
+                                    <td>Smart categorization, sentiment analysis, and automation</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" @click="navigateToFeature('ai-ml')">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- Add more rows for other features -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function featuresDashboard() {
+    return {
+        viewMode: 'grid',
+        searchQuery: '',
+        selectedCategory: '',
+        filteredFeatures: [],
+        
+        hasPermission(permission) {
+            // Check if user has permission for this feature
+            const permissions = [
+                'tickets', 'work_orders', 'technicians', 'knowledge_base',
+                'ai_ml', 'customer_experience', 'analytics', 'integrations',
+                'mobile_iot', 'security', 'workflow', 'communication',
+                'reports', 'user_management', 'settings'
+            ];
+            return permissions.includes(permission);
+        },
+        
+        filterFeatures() {
+            // Filter features based on search query and category
+            console.log('Filtering features:', this.searchQuery, this.selectedCategory);
+        },
+        
+        navigateToFeature(feature) {
+            // Navigate to specific feature
+            const routes = {
+                'tickets': '/tickets/',
+                'work-orders': '/work-orders/',
+                'technicians': '/technicians/',
+                'knowledge-base': '/knowledge-base/',
+                'ai-ml': '/api/v1/ai-ml/dashboard/',
+                'customer-experience': '/api/v1/customer-experience/dashboard/',
+                'analytics': '/api/v1/advanced-analytics/dashboard/',
+                'integrations': '/api/v1/integration-platform/dashboard/',
+                'mobile-iot': '/api/v1/mobile-iot/dashboard/',
+                'security': '/api/v1/advanced-security/dashboard/',
+                'workflow': '/api/v1/advanced-workflow/dashboard/',
+                'communication': '/api/v1/advanced-communication/dashboard/',
+                'reports': '/reports/',
+                'users': '/users/',
+                'settings': '/settings/'
+            };
+            
+            if (routes[feature]) {
+                window.location.href = routes[feature];
+            }
+        }
+    }
+}
+</script>
+{% endblock %}

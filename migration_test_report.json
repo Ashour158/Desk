@@ -1,0 +1,23 @@
+{
+  "test_summary": {
+    "start_time": "2025-10-12T20:35:00.465860",
+    "end_time": "2025-10-12T20:35:02.161556",
+    "total_duration": "1.70 seconds",
+    "total_tests": 6,
+    "passed_tests": 5,
+    "failed_tests": 1,
+    "warning_tests": 0,
+    "error_tests": 0
+  },
+  "test_results": {
+    "migration_status": "FAIL",
+    "backup_strategy": "PASS",
+    "rollback_migrations": "PASS",
+    "connection_pooling": "PASS",
+    "data_seeding": "PASS",
+    "migration_performance": "PASS"
+  },
+  "recommendations": [
+    "Fix Django settings configuration issues"
+  ]
+}

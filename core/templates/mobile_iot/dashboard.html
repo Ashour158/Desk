@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Mobile & IoT Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid" x-data="mobileIoTDashboard()">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">Mobile & IoT Platform</h1>
+                    <p class="text-muted">Mobile applications and IoT device management</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" @click="createApp()">
+                        <i class="fas fa-plus"></i> New App
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile & IoT Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Mobile Apps</h6>
+                        <h3 class="mb-0">{{ total_mobile_apps }}</h3>
+                    </div>
+                    <div class="text-primary">
+                        <i class="fas fa-mobile-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card success fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Active IoT Devices</h6>
+                        <h3 class="mb-0">{{ active_iot_devices }}</h3>
+                    </div>
+                    <div class="text-success">
+                        <i class="fas fa-wifi fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card info fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Location Trackings</h6>
+                        <h3 class="mb-0">{{ location_trackings }}</h3>
+                    </div>
+                    <div class="text-info">
+                        <i class="fas fa-map-marker-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card warning fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Offline Syncs</h6>
+                        <h3 class="mb-0">{{ offline_syncs }}</h3>
+                    </div>
+                    <div class="text-warning">
+                        <i class="fas fa-sync fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile & IoT Features -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card fade-in">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-mobile-alt me-2"></i>
+                        Mobile & IoT Features
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-mobile-alt fa-3x text-primary mb-3"></i>
+                                <h6>Mobile Apps</h6>
+                                <p class="text-muted">Cross-platform mobile applications</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-wifi fa-3x text-success mb-3"></i>
+                                <h6>IoT Devices</h6>
+                                <p class="text-muted">IoT device management and monitoring</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-map-marker-alt fa-3x text-info mb-3"></i>
+                                <h6>Location Tracking</h6>
+                                <p class="text-muted">Real-time location tracking</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-sync fa-3x text-warning mb-3"></i>
+                                <h6>Offline Sync</h6>
+                                <p class="text-muted">Offline-first synchronization</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function mobileIoTDashboard() {
+    return {
+        createApp() {
+            console.log('Creating new mobile app...');
+        }
+    }
+}
+</script>
+{% endblock %}

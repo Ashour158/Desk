@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: helpdesk
+  labels:
+    name: helpdesk
+    environment: production
+

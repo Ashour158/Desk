@@ -1,0 +1,68 @@
+{
+  "monitoring": {
+    "interval": 30,
+    "retention_days": 30,
+    "alert_cooldown": 300
+  },
+  "alerts": {
+    "email": {
+      "enabled": true,
+      "smtp_server": "smtp.gmail.com",
+      "smtp_port": 587,
+      "username": "alerts@helpdesk-platform.com",
+      "password": "your-app-password",
+      "from_email": "alerts@helpdesk-platform.com",
+      "to_emails": [
+        "admin@helpdesk-platform.com",
+        "devops@helpdesk-platform.com"
+      ]
+    },
+    "slack": {
+      "enabled": true,
+      "webhook_url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+      "channel": "#alerts",
+      "username": "AlertBot"
+    },
+    "webhook": {
+      "enabled": false,
+      "url": "https://your-webhook-endpoint.com/alerts",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer your-token"
+      }
+    },
+    "sms": {
+      "enabled": false,
+      "provider": "twilio",
+      "account_sid": "your-twilio-account-sid",
+      "auth_token": "your-twilio-auth-token",
+      "from_number": "+1234567890",
+      "to_numbers": [
+        "+1234567890",
+        "+0987654321"
+      ]
+    }
+  },
+  "services": {
+    "django": "http://localhost:8000/health/",
+    "ai_service": "http://localhost:8001/health/",
+    "realtime": "http://localhost:3000/health/"
+  },
+  "thresholds": {
+    "cpu_percent": 80.0,
+    "memory_percent": 85.0,
+    "disk_percent": 90.0,
+    "response_time": 500.0,
+    "error_rate": 5.0,
+    "cache_hit_rate": 70.0,
+    "queue_size": 1000
+  },
+  "suppression": {
+    "enabled": true,
+    "quiet_hours": {
+      "start": "22:00",
+      "end": "08:00"
+    },
+    "maintenance_windows": []
+  }
+}

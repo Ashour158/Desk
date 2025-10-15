@@ -1,0 +1,18 @@
+-r base.txt
+
+# Production specific packages
+gunicorn==21.2.0
+whitenoise==6.6.0
+django-whitenoise==6.6.0
+
+# Monitoring
+sentry-sdk==1.38.0
+newrelic==9.2.0
+
+# Performance
+django-cachalot==2.6.1
+django-redis==5.4.0
+
+# Security
+django-security==0.20.0
+django-ratelimit==4.1.0

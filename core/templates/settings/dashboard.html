@@ -1,0 +1,743 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}System Settings{% endblock %}
+
+{% block content %}
+<div class="container-fluid" x-data="settingsDashboard()">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-cog me-2"></i>
+                        System Settings
+                    </h1>
+                    <p class="text-muted">Manage your organization's configuration and preferences</p>
+                </div>
+                <div>
+                    <button class="btn btn-success" @click="saveAllSettings()">
+                        <i class="fas fa-save"></i> Save All Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Navigation -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <ul class="nav nav-pills nav-fill" id="settingsTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="general-tab" data-bs-toggle="pill" data-bs-target="#general" type="button" role="tab">
+                                <i class="fas fa-building me-2"></i>General
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="security-tab" data-bs-toggle="pill" data-bs-target="#security" type="button" role="tab">
+                                <i class="fas fa-shield-alt me-2"></i>Security
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="integrations-tab" data-bs-toggle="pill" data-bs-target="#integrations" type="button" role="tab">
+                                <i class="fas fa-plug me-2"></i>Integrations
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="notifications-tab" data-bs-toggle="pill" data-bs-target="#notifications" type="button" role="tab">
+                                <i class="fas fa-bell me-2"></i>Notifications
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="automation-tab" data-bs-toggle="pill" data-bs-target="#automation" type="button" role="tab">
+                                <i class="fas fa-cogs me-2"></i>Automation
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="ai-ml-tab" data-bs-toggle="pill" data-bs-target="#ai-ml" type="button" role="tab">
+                                <i class="fas fa-brain me-2"></i>AI & ML
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="analytics-tab" data-bs-toggle="pill" data-bs-target="#analytics" type="button" role="tab">
+                                <i class="fas fa-chart-line me-2"></i>Analytics
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="mobile-tab" data-bs-toggle="pill" data-bs-target="#mobile" type="button" role="tab">
+                                <i class="fas fa-mobile-alt me-2"></i>Mobile & IoT
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Content -->
+    <div class="tab-content" id="settingsTabContent">
+        <!-- General Settings -->
+        <div class="tab-pane fade show active" id="general" role="tabpanel">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-building me-2"></i>
+                                Organization Details
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label class="form-label">Organization Name</label>
+                                    <input type="text" class="form-control" x-model="settings.organization.name" placeholder="Enter organization name">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Domain</label>
+                                    <input type="text" class="form-control" x-model="settings.organization.domain" placeholder="yourcompany.com">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Industry</label>
+                                    <select class="form-select" x-model="settings.organization.industry">
+                                        <option value="technology">Technology</option>
+                                        <option value="healthcare">Healthcare</option>
+                                        <option value="finance">Finance</option>
+                                        <option value="retail">Retail</option>
+                                        <option value="manufacturing">Manufacturing</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Timezone</label>
+                                    <select class="form-select" x-model="settings.organization.timezone">
+                                        <option value="UTC">UTC</option>
+                                        <option value="America/New_York">Eastern Time</option>
+                                        <option value="America/Chicago">Central Time</option>
+                                        <option value="America/Denver">Mountain Time</option>
+                                        <option value="America/Los_Angeles">Pacific Time</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-palette me-2"></i>
+                                Branding & Theme
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label class="form-label">Primary Color</label>
+                                    <input type="color" class="form-control form-control-color" x-model="settings.branding.primaryColor">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Logo</label>
+                                    <input type="file" class="form-control" @change="handleLogoUpload">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Favicon</label>
+                                    <input type="file" class="form-control" @change="handleFaviconUpload">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Custom CSS</label>
+                                    <textarea class="form-control" rows="4" x-model="settings.branding.customCSS" placeholder="/* Custom CSS */"></textarea>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Settings -->
+        <div class="tab-pane fade" id="security" role="tabpanel">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-lock me-2"></i>
+                                Authentication
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.security.twoFactorAuth">
+                                    <label class="form-check-label">Enable Two-Factor Authentication</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.security.ssoEnabled">
+                                    <label class="form-check-label">Enable Single Sign-On (SSO)</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Password Policy</label>
+                                <select class="form-select" x-model="settings.security.passwordPolicy">
+                                    <option value="basic">Basic (8+ characters)</option>
+                                    <option value="medium">Medium (8+ chars, numbers)</option>
+                                    <option value="strong">Strong (12+ chars, numbers, symbols)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Session Timeout (minutes)</label>
+                                <input type="number" class="form-control" x-model="settings.security.sessionTimeout" min="5" max="480">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                Access Control
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">IP Whitelist</label>
+                                <textarea class="form-control" rows="3" x-model="settings.security.ipWhitelist" placeholder="192.168.1.0/24&#10;10.0.0.0/8"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.security.auditLogging">
+                                    <label class="form-check-label">Enable Audit Logging</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.security.rateLimiting">
+                                    <label class="form-check-label">Enable Rate Limiting</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Integrations Settings -->
+        <div class="tab-pane fade" id="integrations" role="tabpanel">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-envelope me-2"></i>
+                                Email Integration
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">SMTP Server</label>
+                                <input type="text" class="form-control" x-model="settings.integrations.email.smtpServer">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">SMTP Port</label>
+                                <input type="number" class="form-control" x-model="settings.integrations.email.smtpPort">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Username</label>
+                                <input type="text" class="form-control" x-model="settings.integrations.email.username">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <input type="password" class="form-control" x-model="settings.integrations.email.password">
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.integrations.email.useTLS">
+                                    <label class="form-check-label">Use TLS</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-sms me-2"></i>
+                                SMS Integration
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Provider</label>
+                                <select class="form-select" x-model="settings.integrations.sms.provider">
+                                    <option value="twilio">Twilio</option>
+                                    <option value="aws-sns">AWS SNS</option>
+                                    <option value="sendgrid">SendGrid</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">API Key</label>
+                                <input type="password" class="form-control" x-model="settings.integrations.sms.apiKey">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">From Number</label>
+                                <input type="text" class="form-control" x-model="settings.integrations.sms.fromNumber">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Settings -->
+        <div class="tab-pane fade" id="notifications" role="tabpanel">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-bell me-2"></i>
+                                Notification Preferences
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.notifications.email">
+                                    <label class="form-check-label">Email Notifications</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.notifications.sms">
+                                    <label class="form-check-label">SMS Notifications</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.notifications.push">
+                                    <label class="form-check-label">Push Notifications</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.notifications.inApp">
+                                    <label class="form-check-label">In-App Notifications</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-clock me-2"></i>
+                                Notification Timing
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Business Hours Start</label>
+                                <input type="time" class="form-control" x-model="settings.notifications.businessHoursStart">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Business Hours End</label>
+                                <input type="time" class="form-control" x-model="settings.notifications.businessHoursEnd">
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.notifications.weekends">
+                                    <label class="form-check-label">Send notifications on weekends</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Automation Settings -->
+        <div class="tab-pane fade" id="automation" role="tabpanel">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-cogs me-2"></i>
+                                Workflow Automation
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.automation.workflowEnabled">
+                                    <label class="form-check-label">Enable Workflow Automation</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.automation.slaEnabled">
+                                    <label class="form-check-label">Enable SLA Management</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Default SLA Response Time (minutes)</label>
+                                <input type="number" class="form-control" x-model="settings.automation.defaultResponseTime" min="1">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Default SLA Resolution Time (hours)</label>
+                                <input type="number" class="form-control" x-model="settings.automation.defaultResolutionTime" min="1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-robot me-2"></i>
+                                AI Automation
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.automation.aiCategorization">
+                                    <label class="form-check-label">AI Ticket Categorization</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.automation.aiSentiment">
+                                    <label class="form-check-label">AI Sentiment Analysis</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.automation.aiSuggestions">
+                                    <label class="form-check-label">AI Response Suggestions</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI & ML Settings -->
+        <div class="tab-pane fade" id="ai-ml" role="tabpanel">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-brain me-2"></i>
+                                AI Configuration
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">AI Provider</label>
+                                <select class="form-select" x-model="settings.ai.provider">
+                                    <option value="openai">OpenAI</option>
+                                    <option value="anthropic">Anthropic Claude</option>
+                                    <option value="azure">Azure OpenAI</option>
+                                    <option value="local">Local Model</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">API Key</label>
+                                <input type="password" class="form-control" x-model="settings.ai.apiKey">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Model</label>
+                                <select class="form-select" x-model="settings.ai.model">
+                                    <option value="gpt-4">GPT-4</option>
+                                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                                    <option value="claude-3">Claude 3</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Confidence Threshold</label>
+                                <input type="range" class="form-range" x-model="settings.ai.confidenceThreshold" min="0" max="1" step="0.1">
+                                <small class="text-muted">Current: <span x-text="settings.ai.confidenceThreshold"></span></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-line me-2"></i>
+                                ML Features
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.ai.predictiveAnalytics">
+                                    <label class="form-check-label">Predictive Analytics</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.ai.chatbot">
+                                    <label class="form-check-label">AI Chatbot</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.ai.computerVision">
+                                    <label class="form-check-label">Computer Vision</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.ai.nlp">
+                                    <label class="form-check-label">Natural Language Processing</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Settings -->
+        <div class="tab-pane fade" id="analytics" role="tabpanel">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Analytics Configuration
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.analytics.enabled">
+                                    <label class="form-check-label">Enable Analytics</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Data Retention (days)</label>
+                                <input type="number" class="form-control" x-model="settings.analytics.dataRetention" min="30" max="3650">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Report Frequency</label>
+                                <select class="form-select" x-model="settings.analytics.reportFrequency">
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-download me-2"></i>
+                                Data Export
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.analytics.exportEnabled">
+                                    <label class="form-check-label">Enable Data Export</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Export Format</label>
+                                <select class="form-select" x-model="settings.analytics.exportFormat">
+                                    <option value="csv">CSV</option>
+                                    <option value="excel">Excel</option>
+                                    <option value="pdf">PDF</option>
+                                    <option value="json">JSON</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile & IoT Settings -->
+        <div class="tab-pane fade" id="mobile" role="tabpanel">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-mobile-alt me-2"></i>
+                                Mobile App
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.mobile.enabled">
+                                    <label class="form-check-label">Enable Mobile App</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.mobile.offlineMode">
+                                    <label class="form-check-label">Offline Mode</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.mobile.pushNotifications">
+                                    <label class="form-check-label">Push Notifications</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-wifi me-2"></i>
+                                IoT Devices
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.iot.enabled">
+                                    <label class="form-check-label">Enable IoT Integration</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Device Update Interval (seconds)</label>
+                                <input type="number" class="form-control" x-model="settings.iot.updateInterval" min="1" max="3600">
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" x-model="settings.iot.locationTracking">
+                                    <label class="form-check-label">Location Tracking</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function settingsDashboard() {
+    return {
+        settings: {
+            organization: {
+                name: 'Your Organization',
+                domain: 'yourcompany.com',
+                industry: 'technology',
+                timezone: 'UTC'
+            },
+            branding: {
+                primaryColor: '#667eea',
+                customCSS: ''
+            },
+            security: {
+                twoFactorAuth: true,
+                ssoEnabled: false,
+                passwordPolicy: 'medium',
+                sessionTimeout: 60,
+                ipWhitelist: '',
+                auditLogging: true,
+                rateLimiting: true
+            },
+            integrations: {
+                email: {
+                    smtpServer: '',
+                    smtpPort: 587,
+                    username: '',
+                    password: '',
+                    useTLS: true
+                },
+                sms: {
+                    provider: 'twilio',
+                    apiKey: '',
+                    fromNumber: ''
+                }
+            },
+            notifications: {
+                email: true,
+                sms: false,
+                push: true,
+                inApp: true,
+                businessHoursStart: '09:00',
+                businessHoursEnd: '17:00',
+                weekends: false
+            },
+            automation: {
+                workflowEnabled: true,
+                slaEnabled: true,
+                defaultResponseTime: 15,
+                defaultResolutionTime: 24,
+                aiCategorization: true,
+                aiSentiment: true,
+                aiSuggestions: true
+            },
+            ai: {
+                provider: 'openai',
+                apiKey: '',
+                model: 'gpt-4',
+                confidenceThreshold: 0.8,
+                predictiveAnalytics: true,
+                chatbot: true,
+                computerVision: false,
+                nlp: true
+            },
+            analytics: {
+                enabled: true,
+                dataRetention: 365,
+                reportFrequency: 'weekly',
+                exportEnabled: true,
+                exportFormat: 'excel'
+            },
+            mobile: {
+                enabled: true,
+                offlineMode: true,
+                pushNotifications: true
+            },
+            iot: {
+                enabled: false,
+                updateInterval: 30,
+                locationTracking: true
+            }
+        },
+        
+        saveAllSettings() {
+            console.log('Saving all settings...', this.settings);
+            // Implement save functionality
+            alert('Settings saved successfully!');
+        },
+        
+        handleLogoUpload(event) {
+            console.log('Logo upload:', event.target.files[0]);
+        },
+        
+        handleFaviconUpload(event) {
+            console.log('Favicon upload:', event.target.files[0]);
+        }
+    }
+}
+</script>
+{% endblock %}

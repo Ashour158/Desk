@@ -1,0 +1,242 @@
+# AWS Security Configuration for Helpdesk Platform
+
+# IAM Policy for EKS Pods
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-security-config
+  namespace: helpdesk
+data:
+  # S3 Access Policy
+  s3-policy.json: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "s3:GetObject",
+            "s3:PutObject",
+            "s3:DeleteObject",
+            "s3:ListBucket"
+          ],
+          "Resource": [
+            "arn:aws:s3:::helpdesk-static-files-*",
+            "arn:aws:s3:::helpdesk-media-files-*"
+          ]
+        }
+      ]
+    }
+  
+  # CloudWatch Logs Policy
+  cloudwatch-policy.json: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+            "logs:PutLogEvents",
+            "logs:DescribeLogGroups",
+            "logs:DescribeLogStreams"
+          ],
+          "Resource": "arn:aws:logs:*:*:*"
+        }
+      ]
+    }
+  
+  # SES Email Policy
+  ses-policy.json: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "ses:SendEmail",
+            "ses:SendRawEmail"
+          ],
+          "Resource": "*"
+        }
+      ]
+    }
+  
+  # Secrets Manager Policy
+  secrets-policy.json: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "secretsmanager:GetSecretValue",
+            "secretsmanager:DescribeSecret"
+          ],
+          "Resource": "arn:aws:secretsmanager:*:*:secret:helpdesk-*"
+        }
+      ]
+    }
+
+---
+# Pod Security Context
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pod-security-context
+  namespace: helpdesk
+data:
+  security-context.yaml: |
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+      seccompProfile:
+        type: RuntimeDefault
+      capabilities:
+        drop:
+          - ALL
+        add:
+          - NET_BIND_SERVICE
+
+---
+# Network Security Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: network-security-config
+  namespace: helpdesk
+data:
+  # Firewall rules
+  firewall-rules.yaml: |
+    # Allow HTTP/HTTPS traffic
+    - port: 80
+      protocol: TCP
+      source: 0.0.0.0/0
+    - port: 443
+      protocol: TCP
+      source: 0.0.0.0/0
+    
+    # Allow internal communication
+    - port: 8000
+      protocol: TCP
+      source: 10.0.0.0/16
+    - port: 8001
+      protocol: TCP
+      source: 10.0.0.0/16
+    - port: 3000
+      protocol: TCP
+      source: 10.0.0.0/16
+    
+    # Allow database access
+    - port: 5432
+      protocol: TCP
+      source: 10.0.0.0/16
+    
+    # Allow Redis access
+    - port: 6379
+      protocol: TCP
+      source: 10.0.0.0/16
+
+---
+# SSL/TLS Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ssl-config
+  namespace: helpdesk
+data:
+  ssl-config.yaml: |
+    # SSL/TLS Configuration
+    ssl_protocols: TLSv1.2 TLSv1.3
+    ssl_ciphers: ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256
+    ssl_prefer_server_ciphers: on
+    ssl_session_cache: shared:SSL:10m
+    ssl_session_timeout: 10m
+    
+    # HSTS Configuration
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always
+    
+    # Security Headers
+    add_header X-Frame-Options "DENY" always
+    add_header X-Content-Type-Options "nosniff" always
+    add_header X-XSS-Protection "1; mode=block" always
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' ws: wss:;" always
+
+---
+# Backup Security Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backup-security-config
+  namespace: helpdesk
+data:
+  backup-policy.yaml: |
+    # Backup encryption
+    encryption:
+      enabled: true
+      algorithm: AES-256
+      key_rotation: 90d
+    
+    # Backup retention
+    retention:
+      daily: 7
+      weekly: 4
+      monthly: 12
+      yearly: 7
+    
+    # Backup verification
+    verification:
+      enabled: true
+      schedule: "0 2 * * *"  # Daily at 2 AM
+    
+    # Backup monitoring
+    monitoring:
+      enabled: true
+      alerts:
+        - backup_failed
+        - backup_verification_failed
+        - backup_encryption_failed
+
+---
+# Compliance Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: compliance-config
+  namespace: helpdesk
+data:
+  compliance-policy.yaml: |
+    # GDPR Compliance
+    gdpr:
+      data_retention: 7y
+      data_anonymization: true
+      right_to_be_forgotten: true
+      data_portability: true
+    
+    # SOC 2 Compliance
+    soc2:
+      access_control: true
+      availability: 99.9%
+      processing_integrity: true
+      confidentiality: true
+      privacy: true
+    
+    # HIPAA Compliance (if applicable)
+    hipaa:
+      encryption_at_rest: true
+      encryption_in_transit: true
+      access_logging: true
+      audit_trail: true
+    
+    # PCI DSS Compliance (if applicable)
+    pci_dss:
+      network_security: true
+      access_control: true
+      monitoring: true
+      encryption: true
+      vulnerability_management: true
+

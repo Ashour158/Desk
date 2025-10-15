@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross-Browser Testing Suite</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        .test-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #2980b9;
+        }
+        .test-button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .results {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .form-container {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+        }
+        .form-field {
+            margin: 10px 0;
+        }
+        .form-field label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-field input,
+        .form-field select,
+        .form-field textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-field input:focus,
+        .form-field select:focus,
+        .form-field textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        .error-message {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .success-message {
+            color: #27ae60;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .browser-info {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .device-info {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Cross-Browser Testing Suite</h1>
+        
+        <div class="browser-info">
+            <h3>Browser Information</h3>
+            <p><strong>User Agent:</strong> <span id="userAgent"></span></p>
+            <p><strong>Browser:</strong> <span id="browserName"></span></p>
+            <p><strong>Version:</strong> <span id="browserVersion"></span></p>
+            <p><strong>Platform:</strong> <span id="platform"></span></p>
+        </div>
+        
+        <div class="device-info">
+            <h3>Device Information</h3>
+            <p><strong>Screen Size:</strong> <span id="screenSize"></span></p>
+            <p><strong>Device Type:</strong> <span id="deviceType"></span></p>
+            <p><strong>Touch Support:</strong> <span id="touchSupport"></span></p>
+            <p><strong>Pixel Ratio:</strong> <span id="pixelRatio"></span></p>
+        </div>
+
+        <div class="test-section">
+            <h3>Test Forms</h3>
+            <p>These forms are used to test cross-browser compatibility:</p>
+            
+            <!-- Login Form -->
+            <div class="form-container">
+                <h4>Login Form</h4>
+                <form id="login-form">
+                    <div class="form-field">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" required>
+                        <div id="email-error" class="error-message"></div>
+                    </div>
+                    <div class="form-field">
+                        <label for="password">Password *</label>
+                        <input type="password" id="password" name="password" required>
+                        <div id="password-error" class="error-message"></div>
+                    </div>
+                    <div class="form-field">
+                        <label>
+                            <input type="checkbox" id="remember" name="remember">
+                            Remember me
+                        </label>
+                    </div>
+                    <button type="submit" class="test-button">Login</button>
+                    <button type="button" class="test-button">Reset</button>
+                </form>
+            </div>
+
+            <!-- Register Form -->
+            <div class="form-container">
+                <h4>Registration Form</h4>
+                <form id="register-form">
+                    <div class="form-field">
+                        <label for="firstName">First Name *</label>
+                        <input type="text" id="firstName" name="firstName" required>
+                        <div id="firstName-error" class="error-message"></div>
+                    </div>
+                    <div class="form-field">
+                        <label for="lastName">Last Name *</label>
+                        <input type="text" id="lastName" name="lastName" required>
+                        <div id="lastName-error" class="error-message"></div>
+                    </div>
+                    <div class="form-field">
+                        <label for="regEmail">Email Address *</label>
+                        <input type="email" id="regEmail" name="email" required>
+                        <div id="regEmail-error" class="error-message"></div>
+                    </div>
+                    <div class="form-field">
+                        <label for="regPassword">Password *</label>
+                        <input type="password" id="regPassword" name="password" required>
+                        <div id="regPassword-error" class="error-message"></div>
+                    </div>
+                    <div class="form-field">
+                        <label for="confirmPassword">Confirm Password *</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                        <div id="confirmPassword-error" class="error-message"></div>
+                    </div>
+                    <div class="form-field">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone">
+                        <div id="phone-error" class="error-message"></div>
+                    </div>
+                    <div class="form-field">
+                        <label>
+                            <input type="checkbox" id="agreeToTerms" name="agreeToTerms" required>
+                            I agree to the terms and conditions *
+                        </label>
+                        <div id="agreeToTerms-error" class="error-message"></div>
+                    </div>
+                    <button type="submit" class="test-button">Register</button>
+                    <button type="button" class="test-button">Reset</button>
+                </form>
+            </div>
+
+            <!-- Ticket Form -->
+            <div class="form-container">
+                <h4>Ticket Form</h4>
+                <form id="ticket-form">
+                    <div class="form-field">
+                        <label for="subject">Subject *</label>
+                        <input type="text" id="subject" name="subject" required>
+                        <div id="subject-error" class="error-message"></div>
+                    </div>
+                    <div class="form-field">
+                        <label for="description">Description *</label>
+                        <textarea id="description" name="description" rows="4" required></textarea>
+                        <div id="description-error" class="error-message"></div>
+                    </div>
+                    <div class="form-field">
+                        <label for="priority">Priority *</label>
+                        <select id="priority" name="priority" required>
+                            <option value="">Select Priority</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                        <div id="priority-error" class="error-message"></div>
+                    </div>
+                    <div class="form-field">
+                        <label for="category">Category *</label>
+                        <select id="category" name="category" required>
+                            <option value="">Select Category</option>
+                            <option value="technical">Technical Support</option>
+                            <option value="billing">Billing</option>
+                            <option value="general">General Inquiry</option>
+                            <option value="feature">Feature Request</option>
+                            <option value="bug">Bug Report</option>
+                        </select>
+                        <div id="category-error" class="error-message"></div>
+                    </div>
+                    <div class="form-field">
+                        <label for="tags">Tags</label>
+                        <input type="text" id="tags" name="tags" placeholder="Enter tags separated by commas">
+                        <div id="tags-error" class="error-message"></div>
+                    </div>
+                    <button type="submit" class="test-button">Submit Ticket</button>
+                    <button type="button" class="test-button">Reset</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test Controls</h3>
+            <button id="runAllTests" class="test-button">Run All Tests</button>
+            <button id="runFormTests" class="test-button">Test Forms Only</button>
+            <button id="testValidation" class="test-button">Test Validation</button>
+            <button id="testImages" class="test-button">Test Images</button>
+            <button id="testLinks" class="test-button">Test Links</button>
+            <button id="testInteractive" class="test-button">Test Interactive Elements</button>
+            <button id="testPerformance" class="test-button">Test Performance</button>
+            <button id="clearResults" class="test-button">Clear Results</button>
+        </div>
+
+        <div class="test-section">
+            <h3>Test Results</h3>
+            <div id="testResults" class="results">Click "Run All Tests" to start testing...</div>
+        </div>
+    </div>
+
+    <script>
+        // Browser and device detection
+        function detectBrowser() {
+            const userAgent = navigator.userAgent;
+            if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
+                return { name: 'Chrome', version: userAgent.match(/Chrome\/(\d+)/)?.[1] || 'Unknown' };
+            } else if (userAgent.includes('Firefox')) {
+                return { name: 'Firefox', version: userAgent.match(/Firefox\/(\d+)/)?.[1] || 'Unknown' };
+            } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+                return { name: 'Safari', version: userAgent.match(/Version\/(\d+)/)?.[1] || 'Unknown' };
+            } else if (userAgent.includes('Edg')) {
+                return { name: 'Edge', version: userAgent.match(/Edg\/(\d+)/)?.[1] || 'Unknown' };
+            }
+            return { name: 'Unknown', version: 'Unknown' };
+        }
+
+        function detectDevice() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const touch = 'ontouchstart' in window;
+            
+            if (width <= 480) {
+                return 'Mobile';
+            } else if (width <= 1024) {
+                return 'Tablet';
+            } else {
+                return 'Desktop';
+            }
+        }
+
+        // Initialize page
+        function initializePage() {
+            const browser = detectBrowser();
+            const device = detectDevice();
+            
+            document.getElementById('userAgent').textContent = navigator.userAgent;
+            document.getElementById('browserName').textContent = browser.name;
+            document.getElementById('browserVersion').textContent = browser.version;
+            document.getElementById('platform').textContent = navigator.platform;
+            document.getElementById('screenSize').textContent = `${window.innerWidth}x${window.innerHeight}`;
+            document.getElementById('deviceType').textContent = device;
+            document.getElementById('touchSupport').textContent = 'ontouchstart' in window ? 'Yes' : 'No';
+            document.getElementById('pixelRatio').textContent = window.devicePixelRatio;
+        }
+
+        // Test functions
+        async function runAllTests() {
+            const results = document.getElementById('testResults');
+            results.textContent = 'Running comprehensive tests...\n\n';
+            
+            try {
+                // Test form validation
+                results.textContent += '🔍 Testing Form Validation...\n';
+                const validationResults = await testFormValidation();
+                results.textContent += `✅ Validation Tests: ${validationResults.passed} passed, ${validationResults.failed} failed\n\n`;
+                
+                // Test image loading
+                results.textContent += '🖼️ Testing Image Loading...\n';
+                const imageResults = await testImageLoading();
+                results.textContent += `✅ Image Tests: ${imageResults.passed} passed, ${imageResults.failed} failed\n\n`;
+                
+                // Test broken links
+                results.textContent += '🔗 Testing Broken Links...\n';
+                const linkResults = await testBrokenLinks();
+                results.textContent += `✅ Link Tests: ${linkResults.passed} passed, ${linkResults.failed} failed\n\n`;
+                
+                // Test interactive elements
+                results.textContent += '🖱️ Testing Interactive Elements...\n';
+                const interactiveResults = await testInteractiveElements();
+                results.textContent += `✅ Interactive Tests: ${interactiveResults.passed} passed, ${interactiveResults.failed} failed\n\n`;
+                
+                // Test performance
+                results.textContent += '⚡ Testing Performance...\n';
+                const performanceResults = testPerformance();
+                results.textContent += `✅ Performance Tests: ${performanceResults.passed} passed, ${performanceResults.failed} failed\n\n`;
+                
+                // Summary
+                const totalPassed = validationResults.passed + imageResults.passed + linkResults.passed + interactiveResults.passed + performanceResults.passed;
+                const totalFailed = validationResults.failed + imageResults.failed + linkResults.failed + interactiveResults.failed + performanceResults.failed;
+                const totalTests = totalPassed + totalFailed;
+                const successRate = totalTests > 0 ? (totalPassed / totalTests) * 100 : 0;
+                
+                results.textContent += `📊 SUMMARY\n`;
+                results.textContent += `Total Tests: ${totalTests}\n`;
+                results.textContent += `Passed: ${totalPassed}\n`;
+                results.textContent += `Failed: ${totalFailed}\n`;
+                results.textContent += `Success Rate: ${successRate.toFixed(2)}%\n\n`;
+                
+                if (successRate >= 90) {
+                    results.textContent += `🎉 Excellent! All tests passed with ${successRate.toFixed(2)}% success rate.\n`;
+                } else if (successRate >= 70) {
+                    results.textContent += `⚠️ Good, but there are some issues to address. Success rate: ${successRate.toFixed(2)}%\n`;
+                } else {
+                    results.textContent += `❌ Critical issues found. Success rate: ${successRate.toFixed(2)}%\n`;
+                }
+                
+            } catch (error) {
+                results.textContent += `❌ Error running tests: ${error.message}\n`;
+            }
+        }
+
+        async function testFormValidation() {
+            let passed = 0;
+            let failed = 0;
+            
+            const forms = document.querySelectorAll('form');
+            for (const form of forms) {
+                const requiredFields = form.querySelectorAll('[required]');
+                for (const field of requiredFields) {
+                    const originalValue = field.value;
+                    field.value = '';
+                    field.dispatchEvent(new Event('blur', { bubbles: true }));
+                    
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    const hasError = document.querySelector(`[id="${field.name}-error"]`);
+                    if (hasError && hasError.textContent.trim()) {
+                        passed++;
+                    } else {
+                        failed++;
+                    }
+                    
+                    field.value = originalValue;
+                }
+            }
+            
+            return { passed, failed };
+        }
+
+        async function testImageLoading() {
+            let passed = 0;
+            let failed = 0;
+            
+            const images = document.querySelectorAll('img');
+            for (const img of images) {
+                if (img.complete && img.naturalHeight !== 0) {
+                    passed++;
+                } else {
+                    failed++;
+                }
+            }
+            
+            return { passed, failed };
+        }
+
+        async function testBrokenLinks() {
+            let passed = 0;
+            let failed = 0;
+            
+            const links = document.querySelectorAll('a[href]');
+            for (const link of links) {
+                if (link.href.startsWith(window.location.origin)) {
+                    const targetId = link.getAttribute('href').replace('#', '');
+                    if (targetId && document.getElementById(targetId)) {
+                        passed++;
+                    } else {
+                        failed++;
+                    }
+                } else {
+                    passed++; // External links
+                }
+            }
+            
+            return { passed, failed };
+        }
+
+        async function testInteractiveElements() {
+            let passed = 0;
+            let failed = 0;
+            
+            const buttons = document.querySelectorAll('button');
+            const inputs = document.querySelectorAll('input, select, textarea');
+            
+            for (const button of buttons) {
+                const clickEvent = new Event('click', { bubbles: true });
+                const handled = button.dispatchEvent(clickEvent);
+                if (handled) {
+                    passed++;
+                } else {
+                    failed++;
+                }
+            }
+            
+            for (const input of inputs) {
+                const focusEvent = new Event('focus', { bubbles: true });
+                const handled = input.dispatchEvent(focusEvent);
+                if (handled) {
+                    passed++;
+                } else {
+                    failed++;
+                }
+            }
+            
+            return { passed, failed };
+        }
+
+        function testPerformance() {
+            let passed = 0;
+            let failed = 0;
+            
+            // Test form load time
+            const forms = document.querySelectorAll('form');
+            const start = performance.now();
+            forms.forEach(form => {
+                const fields = form.querySelectorAll('input, select, textarea');
+                fields.forEach(field => {
+                    field.dispatchEvent(new Event('blur', { bubbles: true }));
+                });
+            });
+            const end = performance.now();
+            const loadTime = end - start;
+            
+            if (loadTime < 100) {
+                passed++;
+            } else {
+                failed++;
+            }
+            
+            // Test validation speed
+            const validationStart = performance.now();
+            forms.forEach(form => {
+                const fields = form.querySelectorAll('input, select, textarea');
+                fields.forEach(field => {
+                    field.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+            });
+            const validationEnd = performance.now();
+            const validationTime = validationEnd - validationStart;
+            
+            if (validationTime < 50) {
+                passed++;
+            } else {
+                failed++;
+            }
+            
+            return { passed, failed, loadTime, validationTime };
+        }
+
+        // Event listeners
+        document.getElementById('runAllTests').addEventListener('click', runAllTests);
+        document.getElementById('runFormTests').addEventListener('click', async () => {
+            const results = document.getElementById('testResults');
+            results.textContent = 'Testing forms only...\n\n';
+            const formResults = await testFormValidation();
+            results.textContent += `Form Validation: ${formResults.passed} passed, ${formResults.failed} failed\n`;
+        });
+        document.getElementById('testValidation').addEventListener('click', async () => {
+            const results = document.getElementById('testResults');
+            results.textContent = 'Testing validation...\n\n';
+            const validationResults = await testFormValidation();
+            results.textContent += `Validation Tests: ${validationResults.passed} passed, ${validationResults.failed} failed\n`;
+        });
+        document.getElementById('testImages').addEventListener('click', async () => {
+            const results = document.getElementById('testResults');
+            results.textContent = 'Testing images...\n\n';
+            const imageResults = await testImageLoading();
+            results.textContent += `Image Tests: ${imageResults.passed} passed, ${imageResults.failed} failed\n`;
+        });
+        document.getElementById('testLinks').addEventListener('click', async () => {
+            const results = document.getElementById('testResults');
+            results.textContent = 'Testing links...\n\n';
+            const linkResults = await testBrokenLinks();
+            results.textContent += `Link Tests: ${linkResults.passed} passed, ${linkResults.failed} failed\n`;
+        });
+        document.getElementById('testInteractive').addEventListener('click', async () => {
+            const results = document.getElementById('testResults');
+            results.textContent = 'Testing interactive elements...\n\n';
+            const interactiveResults = await testInteractiveElements();
+            results.textContent += `Interactive Tests: ${interactiveResults.passed} passed, ${interactiveResults.failed} failed\n`;
+        });
+        document.getElementById('testPerformance').addEventListener('click', () => {
+            const results = document.getElementById('testResults');
+            results.textContent = 'Testing performance...\n\n';
+            const performanceResults = testPerformance();
+            results.textContent += `Performance Tests: ${performanceResults.passed} passed, ${performanceResults.failed} failed\n`;
+            results.textContent += `Load Time: ${performanceResults.loadTime.toFixed(2)}ms\n`;
+            results.textContent += `Validation Time: ${performanceResults.validationTime.toFixed(2)}ms\n`;
+        });
+        document.getElementById('clearResults').addEventListener('click', () => {
+            document.getElementById('testResults').textContent = 'Results cleared. Click "Run All Tests" to start testing...';
+        });
+
+        // Initialize page when loaded
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>

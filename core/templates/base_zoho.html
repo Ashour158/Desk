@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HelpDesk Platform{% endblock %}</title>
+    
+    <!-- Zoho Theme CSS -->
+    <link href="{% static 'css/zoho-theme.css' %}" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    
+    <!-- Custom Zoho Styles -->
+    <style>
+        /* Additional Zoho-specific styles */
+        .zoho-sidebar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: var(--zoho-gray-600);
+            cursor: pointer;
+            padding: var(--zoho-space-2);
+            border-radius: var(--zoho-radius);
+        }
+        
+        .zoho-sidebar-toggle:hover {
+            background-color: var(--zoho-gray-100);
+            color: var(--zoho-gray-800);
+        }
+        
+        .zoho-user-menu {
+            position: relative;
+        }
+        
+        .zoho-user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--zoho-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: var(--zoho-font-size-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .zoho-user-avatar:hover {
+            background-color: var(--zoho-primary-dark);
+        }
+        
+        .zoho-notification-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background-color: var(--zoho-danger);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .zoho-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: var(--zoho-space-2);
+            font-size: var(--zoho-font-size-sm);
+            color: var(--zoho-gray-600);
+            margin-bottom: var(--zoho-space-4);
+        }
+        
+        .zoho-breadcrumb-item {
+            display: flex;
+            align-items: center;
+            gap: var(--zoho-space-2);
+        }
+        
+        .zoho-breadcrumb-separator {
+            color: var(--zoho-gray-400);
+        }
+        
+        .zoho-page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--zoho-space-6);
+        }
+        
+        .zoho-page-title {
+            font-size: var(--zoho-font-size-2xl);
+            font-weight: 700;
+            color: var(--zoho-gray-900);
+            margin: 0;
+        }
+        
+        .zoho-page-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--zoho-space-3);
+        }
+        
+        .zoho-content {
+            padding: var(--zoho-space-6);
+        }
+        
+        .zoho-grid {
+            display: grid;
+            gap: var(--zoho-space-6);
+        }
+        
+        .zoho-grid-cols-1 { grid-template-columns: 1fr; }
+        .zoho-grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .zoho-grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .zoho-grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+        
+        .zoho-flex {
+            display: flex;
+        }
+        
+        .zoho-flex-col {
+            flex-direction: column;
+        }
+        
+        .zoho-items-center {
+            align-items: center;
+        }
+        
+        .zoho-justify-between {
+            justify-content: space-between;
+        }
+        
+        .zoho-gap-2 { gap: var(--zoho-space-2); }
+        .zoho-gap-3 { gap: var(--zoho-space-3); }
+        .zoho-gap-4 { gap: var(--zoho-space-4); }
+        .zoho-gap-6 { gap: var(--zoho-space-6); }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .zoho-sidebar-toggle {
+                display: block;
+            }
+            
+            .zoho-page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--zoho-space-4);
+            }
+            
+            .zoho-page-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            
+            .zoho-grid-cols-2,
+            .zoho-grid-cols-3,
+            .zoho-grid-cols-4 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body x-data="zohoApp()">
+    <div class="zoho-layout">
+        <!-- Sidebar -->
+        <nav class="zoho-sidebar" :class="{ 'collapsed': sidebarCollapsed }">
+            <!-- Logo -->
+            <div class="zoho-header">
+                <a href="/" class="zoho-logo">
+                    <i class="fas fa-headset"></i>
+                    <span>HelpDesk</span>
+                </a>
+            </div>
+            
+            <!-- User Info -->
+            <div class="zoho-card-body">
+                <div class="zoho-flex zoho-items-center zoho-gap-3">
+                    <div class="zoho-user-avatar">
+                        JD
+                    </div>
+                    <div>
+                        <div class="zoho-font-semibold zoho-text-sm">John Doe</div>
+                        <div class="zoho-text-xs zoho-text-gray-600">Administrator</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <div class="zoho-nav">
+                <!-- Core Features -->
+                <div class="zoho-nav-section">
+                    <div class="zoho-nav-section-title">Core</div>
+                    <a href="/" class="zoho-nav-item" :class="{ 'active': activeNav === 'dashboard' }" @click="setActiveNav('dashboard')">
+                        <i class="fas fa-tachometer-alt zoho-nav-icon"></i>
+                        Dashboard
+                    </a>
+                    <a href="/tickets/" class="zoho-nav-item" :class="{ 'active': activeNav === 'tickets' }" @click="setActiveNav('tickets')">
+                        <i class="fas fa-ticket-alt zoho-nav-icon"></i>
+                        Tickets
+                        <span class="zoho-badge zoho-badge-danger" style="margin-left: auto;">5</span>
+                    </a>
+                    <a href="/work-orders/" class="zoho-nav-item" :class="{ 'active': activeNav === 'work-orders' }" @click="setActiveNav('work-orders')">
+                        <i class="fas fa-wrench zoho-nav-icon"></i>
+                        Work Orders
+                        <span class="zoho-badge zoho-badge-warning" style="margin-left: auto;">3</span>
+                    </a>
+                    <a href="/technicians/" class="zoho-nav-item" :class="{ 'active': activeNav === 'technicians' }" @click="setActiveNav('technicians')">
+                        <i class="fas fa-user-tie zoho-nav-icon"></i>
+                        Technicians
+                    </a>
+                    <a href="/knowledge-base/" class="zoho-nav-item" :class="{ 'active': activeNav === 'knowledge-base' }" @click="setActiveNav('knowledge-base')">
+                        <i class="fas fa-book zoho-nav-icon"></i>
+                        Knowledge Base
+                    </a>
+                </div>
+                
+                <!-- Advanced Features -->
+                <div class="zoho-nav-section">
+                    <div class="zoho-nav-section-title">Advanced</div>
+                    <a href="/api/v1/ai-ml/dashboard/" class="zoho-nav-item" :class="{ 'active': activeNav === 'ai-ml' }" @click="setActiveNav('ai-ml')" x-show="hasPermission('ai_ml')">
+                        <i class="fas fa-brain zoho-nav-icon"></i>
+                        AI & ML
+                    </a>
+                    <a href="/api/v1/customer-experience/dashboard/" class="zoho-nav-item" :class="{ 'active': activeNav === 'customer-experience' }" @click="setActiveNav('customer-experience')" x-show="hasPermission('customer_experience')">
+                        <i class="fas fa-heart zoho-nav-icon"></i>
+                        Customer Experience
+                    </a>
+                    <a href="/api/v1/advanced-analytics/dashboard/" class="zoho-nav-item" :class="{ 'active': activeNav === 'analytics' }" @click="setActiveNav('analytics')" x-show="hasPermission('analytics')">
+                        <i class="fas fa-chart-line zoho-nav-icon"></i>
+                        Analytics
+                    </a>
+                    <a href="/api/v1/integration-platform/dashboard/" class="zoho-nav-item" :class="{ 'active': activeNav === 'integrations' }" @click="setActiveNav('integrations')" x-show="hasPermission('integrations')">
+                        <i class="fas fa-plug zoho-nav-icon"></i>
+                        Integrations
+                    </a>
+                    <a href="/api/v1/mobile-iot/dashboard/" class="zoho-nav-item" :class="{ 'active': activeNav === 'mobile-iot' }" @click="setActiveNav('mobile-iot')" x-show="hasPermission('mobile_iot')">
+                        <i class="fas fa-mobile-alt zoho-nav-icon"></i>
+                        Mobile & IoT
+                    </a>
+                </div>
+                
+                <!-- System Features -->
+                <div class="zoho-nav-section">
+                    <div class="zoho-nav-section-title">System</div>
+                    <a href="/api/v1/advanced-security/dashboard/" class="zoho-nav-item" :class="{ 'active': activeNav === 'security' }" @click="setActiveNav('security')" x-show="hasPermission('security')">
+                        <i class="fas fa-shield-alt zoho-nav-icon"></i>
+                        Security
+                    </a>
+                    <a href="/api/v1/advanced-workflow/dashboard/" class="zoho-nav-item" :class="{ 'active': activeNav === 'workflow' }" @click="setActiveNav('workflow')" x-show="hasPermission('workflow')">
+                        <i class="fas fa-cogs zoho-nav-icon"></i>
+                        Workflow
+                    </a>
+                    <a href="/api/v1/advanced-communication/dashboard/" class="zoho-nav-item" :class="{ 'active': activeNav === 'communication' }" @click="setActiveNav('communication')" x-show="hasPermission('communication')">
+                        <i class="fas fa-comments zoho-nav-icon"></i>
+                        Communication
+                    </a>
+                    <a href="/settings/" class="zoho-nav-item" :class="{ 'active': activeNav === 'settings' }" @click="setActiveNav('settings')">
+                        <i class="fas fa-cog zoho-nav-icon"></i>
+                        Settings
+                    </a>
+                    <!-- System Dashboard -->
+                    <a href="/system/" class="zoho-nav-item" :class="{ 'active': activeNav === 'system' }" @click="setActiveNav('system')">
+                        <i class="fas fa-tachometer-alt zoho-nav-icon"></i>
+                        System Dashboard
+                    </a>
+                    
+                    <a href="/microservices/" class="zoho-nav-item" :class="{ 'active': activeNav === 'microservices' }" @click="setActiveNav('microservices')">
+                        <i class="fas fa-server zoho-nav-icon"></i>
+                        Microservices
+                    </a>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Main Content -->
+        <main class="zoho-main" :class="{ 'expanded': sidebarCollapsed }">
+            <!-- Header -->
+            <header class="zoho-header">
+                <div class="zoho-header-left">
+                    <button class="zoho-sidebar-toggle" @click="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    
+                    <!-- Breadcrumb -->
+                    <nav class="zoho-breadcrumb">
+                        <div class="zoho-breadcrumb-item">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </div>
+                        <i class="fas fa-chevron-right zoho-breadcrumb-separator"></i>
+                        <div class="zoho-breadcrumb-item">
+                            <span>{% block breadcrumb %}{% endblock %}</span>
+                        </div>
+                    </nav>
+                </div>
+                
+                <div class="zoho-header-right">
+                    <!-- Search -->
+                    <div class="zoho-search">
+                        <i class="fas fa-search zoho-search-icon"></i>
+                        <input type="text" class="zoho-search-input" placeholder="Search tickets, customers, knowledge base..." x-model="searchQuery" @input="handleSearch()">
+                    </div>
+                    
+                    <!-- Notifications -->
+                    <div class="zoho-dropdown">
+                        <button class="zoho-btn zoho-btn-secondary" @click="toggleNotifications()">
+                            <i class="fas fa-bell"></i>
+                            <span class="zoho-notification-badge" x-show="notificationCount > 0" x-text="notificationCount"></span>
+                        </button>
+                        <div class="zoho-dropdown-menu" x-show="showNotifications" @click.away="showNotifications = false">
+                            <div class="zoho-dropdown-item">
+                                <div class="zoho-font-semibold">Notifications</div>
+                            </div>
+                            <div class="zoho-dropdown-divider"></div>
+                            <a href="#" class="zoho-dropdown-item">
+                                <i class="fas fa-ticket-alt zoho-text-primary" style="margin-right: 8px;"></i>
+                                New ticket #1234
+                            </a>
+                            <a href="#" class="zoho-dropdown-item">
+                                <i class="fas fa-wrench zoho-text-warning" style="margin-right: 8px;"></i>
+                                Work order #5678 assigned
+                            </a>
+                            <a href="#" class="zoho-dropdown-item">
+                                <i class="fas fa-exclamation-triangle zoho-text-danger" style="margin-right: 8px;"></i>
+                                SLA breach alert
+                            </a>
+                            <div class="zoho-dropdown-divider"></div>
+                            <a href="#" class="zoho-dropdown-item zoho-text-center">View All</a>
+                        </div>
+                    </div>
+                    
+                    <!-- User Menu -->
+                    <div class="zoho-dropdown zoho-user-menu">
+                        <button class="zoho-user-avatar" @click="toggleUserMenu()">
+                            JD
+                        </button>
+                        <div class="zoho-dropdown-menu" x-show="showUserMenu" @click.away="showUserMenu = false">
+                            <div class="zoho-dropdown-item">
+                                <div class="zoho-font-semibold">John Doe</div>
+                                <div class="zoho-text-xs zoho-text-gray-600">john.doe@company.com</div>
+                            </div>
+                            <div class="zoho-dropdown-divider"></div>
+                            <a href="#" class="zoho-dropdown-item">
+                                <i class="fas fa-user" style="margin-right: 8px;"></i>
+                                Profile
+                            </a>
+                            <a href="#" class="zoho-dropdown-item">
+                                <i class="fas fa-cog" style="margin-right: 8px;"></i>
+                                Settings
+                            </a>
+                            <a href="#" class="zoho-dropdown-item">
+                                <i class="fas fa-question-circle" style="margin-right: 8px;"></i>
+                                Help
+                            </a>
+                            <div class="zoho-dropdown-divider"></div>
+                            <a href="#" class="zoho-dropdown-item">
+                                <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i>
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Page Content -->
+            <div class="zoho-content">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        function zohoApp() {
+            return {
+                sidebarCollapsed: false,
+                activeNav: 'dashboard',
+                searchQuery: '',
+                showNotifications: false,
+                showUserMenu: false,
+                notificationCount: 3,
+                userPermissions: [
+                    'ai_ml', 'customer_experience', 'analytics', 'integrations', 
+                    'mobile_iot', 'security', 'workflow', 'communication'
+                ],
+                
+                toggleSidebar() {
+                    this.sidebarCollapsed = !this.sidebarCollapsed;
+                },
+                
+                setActiveNav(nav) {
+                    this.activeNav = nav;
+                },
+                
+                hasPermission(permission) {
+                    return this.userPermissions.includes(permission);
+                },
+                
+                handleSearch() {
+                    if (this.searchQuery.length > 2) {
+                        console.log('Searching for:', this.searchQuery);
+                        // Implement search functionality
+                    }
+                },
+                
+                toggleNotifications() {
+                    this.showNotifications = !this.showNotifications;
+                    this.showUserMenu = false;
+                },
+                
+                toggleUserMenu() {
+                    this.showUserMenu = !this.showUserMenu;
+                    this.showNotifications = false;
+                },
+                
+                // Real-time updates
+                initRealTimeUpdates() {
+                    // WebSocket connection for real-time updates
+                    const ws = new WebSocket('ws://localhost:8000/ws/');
+                    
+                    ws.onmessage = function(event) {
+                        const data = JSON.parse(event.data);
+                        this.handleRealTimeUpdate(data);
+                    }.bind(this);
+                },
+                
+                handleRealTimeUpdate(data) {
+                    switch(data.type) {
+                        case 'ticket_update':
+                            this.updateTicketCount(data.count);
+                            break;
+                        case 'work_order_update':
+                            this.updateWorkOrderCount(data.count);
+                            break;
+                        case 'notification':
+                            this.showNotification(data.message);
+                            this.notificationCount++;
+                            break;
+                    }
+                },
+                
+                updateTicketCount(count) {
+                    // Update ticket count in navigation
+                    const badge = document.querySelector('.zoho-nav-item[href="/tickets/"] .zoho-badge');
+                    if (badge) badge.textContent = count;
+                },
+                
+                updateWorkOrderCount(count) {
+                    // Update work order count in navigation
+                    const badge = document.querySelector('.zoho-nav-item[href="/work-orders/"] .zoho-badge');
+                    if (badge) badge.textContent = count;
+                },
+                
+                showNotification(message) {
+                    // Show toast notification
+                    const toast = document.createElement('div');
+                    toast.className = 'zoho-alert zoho-alert-info zoho-fade-in';
+                    toast.style.position = 'fixed';
+                    toast.style.top = '20px';
+                    toast.style.right = '20px';
+                    toast.style.zIndex = '9999';
+                    toast.style.minWidth = '300px';
+                    toast.innerHTML = `
+                        <div class="zoho-flex zoho-items-center zoho-justify-between">
+                            <span>${message}</span>
+                            <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: inherit; cursor: pointer;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                    document.body.appendChild(toast);
+                    
+                    // Auto remove after 5 seconds
+                    setTimeout(() => {
+                        if (toast.parentElement) {
+                            toast.remove();
+                        }
+                    }, 5000);
+                }
+            }
+        }
+        
+        // Initialize real-time updates when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize real-time features
+            if (window.Alpine) {
+                Alpine.data('zohoApp', zohoApp);
+            }
+        });
+    </script>
+</body>
+</html>

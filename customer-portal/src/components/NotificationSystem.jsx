@@ -1,0 +1,327 @@
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import PropTypes from 'prop-types';
+
+/**
+ * Notification Context for managing app-wide notifications
+ */
+const NotificationContext = createContext();
+
+/**
+ * Custom hook to use notifications
+ */
+export const useNotifications = () => {
+  const context = useContext(NotificationContext);
+  if (!context) {
+    throw new Error('useNotifications must be used within a NotificationProvider');
+  }
+  return context;
+};
+
+/**
+ * Notification Provider Component
+ */
+export const NotificationProvider = ({ children }) => {
+  const [notifications, setNotifications] = useState([]);
+
+  /**
+   * Add a new notification
+   */
+  const addNotification = useCallback((notification) => {
+    const id = Date.now() + Math.random();
+    const newNotification = {
+      id,
+      type: 'info',
+      duration: 5000,
+      ...notification,
+      timestamp: Date.now()
+    };
+
+    setNotifications(prev => [...prev, newNotification]);
+
+    // Auto-remove notification after duration
+    if (newNotification.duration > 0) {
+      setTimeout(() => {
+        removeNotification(id);
+      }, newNotification.duration);
+    }
+
+    return id;
+  }, []);
+
+  /**
+   * Remove a notification
+   */
+  const removeNotification = useCallback((id) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  }, []);
+
+  /**
+   * Clear all notifications
+   */
+  const clearAll = useCallback(() => {
+    setNotifications([]);
+  }, []);
+
+  /**
+   * Show success notification
+   */
+  const showSuccess = useCallback((message, options = {}) => {
+    return addNotification({
+      type: 'success',
+      message,
+      ...options
+    });
+  }, [addNotification]);
+
+  /**
+   * Show error notification
+   */
+  const showError = useCallback((message, options = {}) => {
+    return addNotification({
+      type: 'error',
+      message,
+      duration: 8000, // Longer duration for errors
+      ...options
+    });
+  }, [addNotification]);
+
+  /**
+   * Show warning notification
+   */
+  const showWarning = useCallback((message, options = {}) => {
+    return addNotification({
+      type: 'warning',
+      message,
+      ...options
+    });
+  }, [addNotification]);
+
+  /**
+   * Show info notification
+   */
+  const showInfo = useCallback((message, options = {}) => {
+    return addNotification({
+      type: 'info',
+      message,
+      ...options
+    });
+  }, [addNotification]);
+
+  const value = {
+    notifications,
+    addNotification,
+    removeNotification,
+    clearAll,
+    showSuccess,
+    showError,
+    showWarning,
+    showInfo
+  };
+
+  return (
+    <NotificationContext.Provider value={value}>
+      {children}
+      <NotificationContainer />
+    </NotificationContext.Provider>
+  );
+};
+
+/**
+ * Notification Container Component
+ */
+const NotificationContainer = () => {
+  const { notifications, removeNotification } = useNotifications();
+
+  return (
+    <div 
+      className="fixed top-4 right-4 z-50 space-y-2"
+      role="region"
+      aria-live="polite"
+      aria-label="Notifications"
+    >
+      {notifications.map(notification => (
+        <NotificationItem
+          key={notification.id}
+          notification={notification}
+          onRemove={removeNotification}
+        />
+      ))}
+    </div>
+  );
+};
+
+/**
+ * Individual Notification Item
+ */
+const NotificationItem = ({ notification, onRemove }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
+
+  useEffect(() => {
+    // Trigger entrance animation
+    const timer = setTimeout(() => setIsVisible(true), 10);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleRemove = useCallback(() => {
+    setIsLeaving(true);
+    setTimeout(() => {
+      onRemove(notification.id);
+    }, 300); // Match animation duration
+  }, [notification.id, onRemove]);
+
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Escape') {
+      handleRemove();
+    }
+  }, [handleRemove]);
+
+  const getNotificationStyles = () => {
+    const baseStyles = "max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden transform transition-all duration-300 ease-in-out";
+    
+    if (isLeaving) {
+      return `${baseStyles} translate-x-full opacity-0`;
+    }
+    
+    if (isVisible) {
+      return `${baseStyles} translate-x-0 opacity-100`;
+    }
+    
+    return `${baseStyles} translate-x-full opacity-0`;
+  };
+
+  const getTypeStyles = () => {
+    switch (notification.type) {
+      case 'success':
+        return 'border-l-4 border-green-400 bg-green-50';
+      case 'error':
+        return 'border-l-4 border-red-400 bg-red-50';
+      case 'warning':
+        return 'border-l-4 border-yellow-400 bg-yellow-50';
+      case 'info':
+      default:
+        return 'border-l-4 border-blue-400 bg-blue-50';
+    }
+  };
+
+  const getIcon = () => {
+    switch (notification.type) {
+      case 'success':
+        return (
+          <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          </svg>
+        );
+      case 'error':
+        return (
+          <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+          </svg>
+        );
+      case 'warning':
+        return (
+          <svg className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
+        );
+      case 'info':
+      default:
+        return (
+          <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+          </svg>
+        );
+    }
+  };
+
+  return (
+    <div
+      className={getNotificationStyles()}
+      role="alert"
+      aria-live="polite"
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+    >
+      <div className={`p-4 ${getTypeStyles()}`}>
+        <div className="flex items-start">
+          <div className="flex-shrink-0">
+            {getIcon()}
+          </div>
+          <div className="ml-3 w-0 flex-1">
+            <p className="text-sm font-medium text-gray-900">
+              {notification.title || getDefaultTitle()}
+            </p>
+            {notification.message && (
+              <p className="mt-1 text-sm text-gray-500">
+                {notification.message}
+              </p>
+            )}
+            {notification.actions && (
+              <div className="mt-2 flex space-x-2">
+                {notification.actions.map((action, index) => (
+                  <button
+                    key={index}
+                    onClick={action.onClick}
+                    className="text-sm font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:underline"
+                  >
+                    {action.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="ml-4 flex-shrink-0 flex">
+            <button
+              onClick={handleRemove}
+              className="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              aria-label="Close notification"
+            >
+              <span className="sr-only">Close</span>
+              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Get default title based on notification type
+ */
+const getDefaultTitle = (type) => {
+  switch (type) {
+    case 'success':
+      return 'Success';
+    case 'error':
+      return 'Error';
+    case 'warning':
+      return 'Warning';
+    case 'info':
+    default:
+      return 'Information';
+  }
+};
+
+NotificationProvider.propTypes = {
+  children: PropTypes.node.isRequired
+};
+
+NotificationItem.propTypes = {
+  notification: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    type: PropTypes.oneOf(['success', 'error', 'warning', 'info']).isRequired,
+    title: PropTypes.string,
+    message: PropTypes.string,
+    duration: PropTypes.number,
+    actions: PropTypes.arrayOf(PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      onClick: PropTypes.func.isRequired
+    }))
+  }).isRequired,
+  onRemove: PropTypes.func.isRequired
+};
+
+export default NotificationProvider;

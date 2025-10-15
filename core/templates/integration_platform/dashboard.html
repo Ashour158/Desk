@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Integration Platform Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid" x-data="integrationPlatformDashboard()">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">Integration Platform</h1>
+                    <p class="text-muted">Enterprise integration and API management</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" @click="createIntegration()">
+                        <i class="fas fa-plus"></i> New Integration
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Integration Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Webhooks</h6>
+                        <h3 class="mb-0">{{ total_webhooks }}</h3>
+                    </div>
+                    <div class="text-primary">
+                        <i class="fas fa-link fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card success fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Active Integrations</h6>
+                        <h3 class="mb-0">{{ active_integrations }}</h3>
+                    </div>
+                    <div class="text-success">
+                        <i class="fas fa-plug fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card info fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Third-party Services</h6>
+                        <h3 class="mb-0">{{ third_party_services }}</h3>
+                    </div>
+                    <div class="text-info">
+                        <i class="fas fa-cloud fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card warning fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Integration Logs</h6>
+                        <h3 class="mb-0">{{ integration_logs }}</h3>
+                    </div>
+                    <div class="text-warning">
+                        <i class="fas fa-list fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Integration Features -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card fade-in">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-plug me-2"></i>
+                        Integration Features
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-link fa-3x text-primary mb-3"></i>
+                                <h6>Webhook Management</h6>
+                                <p class="text-muted">Configure and manage webhooks</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-plug fa-3x text-success mb-3"></i>
+                                <h6>API Integrations</h6>
+                                <p class="text-muted">Connect with external APIs</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-cloud fa-3x text-info mb-3"></i>
+                                <h6>Third-party Services</h6>
+                                <p class="text-muted">Integrate with popular services</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-list fa-3x text-warning mb-3"></i>
+                                <h6>Activity Logs</h6>
+                                <p class="text-muted">Monitor integration activities</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function integrationPlatformDashboard() {
+    return {
+        createIntegration() {
+            console.log('Creating new integration...');
+        }
+    }
+}
+</script>
+{% endblock %}

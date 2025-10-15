@@ -1,0 +1,96 @@
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | migrations
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_django = "django"
+known_first_party = "apps"
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "DJANGO", "FIRSTPARTY", "LOCALFOLDER"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "django.*",
+    "rest_framework.*",
+    "celery.*",
+    "channels.*",
+    "redis.*",
+    "psycopg2.*",
+    "PIL.*",
+    "openai.*",
+    "transformers.*",
+    "sklearn.*",
+    "numpy.*",
+    "pandas.*",
+    "requests.*",
+    "twilio.*",
+    "sendgrid.*",
+    "stripe.*",
+    "boto3.*",
+    "geopy.*",
+    "aiohttp.*",
+    "socketio.*",
+    "winston.*"
+]
+ignore_missing_imports = true
+
+[tool.pylint]
+max-line-length = 88
+disable = [
+    "C0114",  # missing-module-docstring
+    "C0115",  # missing-class-docstring
+    "C0116",  # missing-function-docstring
+    "R0903",  # too-few-public-methods
+    "R0913",  # too-many-arguments
+    "W0613",  # unused-argument
+    "C0103",  # invalid-name
+]
+ignore-paths = [
+    "migrations/",
+    "venv/",
+    ".venv/",
+    "env/",
+    ".env/",
+    "node_modules/",
+    ".pytest_cache/",
+    ".coverage/",
+    "htmlcov/",
+    "dist/",
+    "build/",
+    "*.egg-info/",
+]

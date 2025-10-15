@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Customer Experience Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid" x-data="customerExperienceDashboard()">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">Customer Experience</h1>
+                    <p class="text-muted">Advanced customer experience management</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" @click="createJourney()">
+                        <i class="fas fa-plus"></i> New Journey
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CX Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Journeys</h6>
+                        <h3 class="mb-0">{{ total_journeys }}</h3>
+                    </div>
+                    <div class="text-primary">
+                        <i class="fas fa-route fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card success fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Active Personas</h6>
+                        <h3 class="mb-0">{{ active_personas }}</h3>
+                    </div>
+                    <div class="text-success">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card info fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Proactive Supports</h6>
+                        <h3 class="mb-0">{{ proactive_supports }}</h3>
+                    </div>
+                    <div class="text-info">
+                        <i class="fas fa-bell fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card warning fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Health Scores</h6>
+                        <h3 class="mb-0">{{ health_scores }}</h3>
+                    </div>
+                    <div class="text-warning">
+                        <i class="fas fa-heartbeat fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CX Features -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card fade-in">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-heart me-2"></i>
+                        Customer Experience Features
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-route fa-3x text-primary mb-3"></i>
+                                <h6>Journey Mapping</h6>
+                                <p class="text-muted">Visual customer journey mapping</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-users fa-3x text-success mb-3"></i>
+                                <h6>Customer Personas</h6>
+                                <p class="text-muted">Detailed customer persona management</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-bell fa-3x text-info mb-3"></i>
+                                <h6>Proactive Support</h6>
+                                <p class="text-muted">Automated proactive customer outreach</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <i class="fas fa-heartbeat fa-3x text-warning mb-3"></i>
+                                <h6>Health Scoring</h6>
+                                <p class="text-muted">Customer health and risk scoring</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function customerExperienceDashboard() {
+    return {
+        createJourney() {
+            console.log('Creating new customer journey...');
+        }
+    }
+}
+</script>
+{% endblock %}

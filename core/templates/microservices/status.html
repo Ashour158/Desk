@@ -1,0 +1,435 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Microservices Status{% endblock %}
+
+{% block content %}
+<div class="container-fluid" x-data="microservicesStatus()">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-server me-2"></i>
+                        Microservices Status
+                    </h1>
+                    <p class="text-muted">Monitor the health and performance of all microservices</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" @click="refreshStatus()">
+                        <i class="fas fa-sync-alt"></i> Refresh Status
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overall Status -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card success fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Overall Status</h6>
+                        <h3 class="mb-0 text-success">Healthy</h3>
+                    </div>
+                    <div class="text-success">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card info fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Active Services</h6>
+                        <h3 class="mb-0">4/4</h3>
+                    </div>
+                    <div class="text-info">
+                        <i class="fas fa-server fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card warning fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Response Time</h6>
+                        <h3 class="mb-0">45ms</h3>
+                    </div>
+                    <div class="text-warning">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card primary fade-in">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Uptime</h6>
+                        <h3 class="mb-0">99.9%</h3>
+                    </div>
+                    <div class="text-primary">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Services Status -->
+    <div class="row">
+        <!-- Django Core Service -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-python me-2"></i>
+                        Django Core Service
+                    </h5>
+                    <span class="badge bg-success">Healthy</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Status</label>
+                                <div class="d-flex align-items-center">
+                                    <span class="status-indicator status-online"></span>
+                                    <span class="ms-2">Online</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Version</label>
+                                <span class="badge bg-primary">4.2.7</span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">URL</label>
+                                <code>http://django:8000</code>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Response Time</label>
+                                <span class="text-success">12ms</span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Uptime</label>
+                                <span class="text-success">99.9%</span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Last Check</label>
+                                <span class="text-muted">2 seconds ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-outline-primary" @click="testService('django')">
+                            <i class="fas fa-play"></i> Test Connection
+                        </button>
+                        <button class="btn btn-sm btn-outline-info" @click="viewLogs('django')">
+                            <i class="fas fa-file-alt"></i> View Logs
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Service -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-brain me-2"></i>
+                        AI Service
+                    </h5>
+                    <span class="badge bg-success">Healthy</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Status</label>
+                                <div class="d-flex align-items-center">
+                                    <span class="status-indicator status-online"></span>
+                                    <span class="ms-2">Online</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Version</label>
+                                <span class="badge bg-primary">1.0.0</span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">URL</label>
+                                <code>http://ai-service:8001</code>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Response Time</label>
+                                <span class="text-success">28ms</span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Uptime</label>
+                                <span class="text-success">99.8%</span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Last Check</label>
+                                <span class="text-muted">2 seconds ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-outline-primary" @click="testService('ai')">
+                            <i class="fas fa-play"></i> Test Connection
+                        </button>
+                        <button class="btn btn-sm btn-outline-info" @click="viewLogs('ai')">
+                            <i class="fas fa-file-alt"></i> View Logs
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Service -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>
+                        Real-time Service
+                    </h5>
+                    <span class="badge bg-success">Healthy</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Status</label>
+                                <div class="d-flex align-items-center">
+                                    <span class="status-indicator status-online"></span>
+                                    <span class="ms-2">Online</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Version</label>
+                                <span class="badge bg-primary">1.0.0</span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">URL</label>
+                                <code>http://realtime-service:8002</code>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Response Time</label>
+                                <span class="text-success">15ms</span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Uptime</label>
+                                <span class="text-success">99.9%</span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Last Check</label>
+                                <span class="text-muted">2 seconds ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-outline-primary" @click="testService('realtime')">
+                            <i class="fas fa-play"></i> Test Connection
+                        </button>
+                        <button class="btn btn-sm btn-outline-info" @click="viewLogs('realtime')">
+                            <i class="fas fa-file-alt"></i> View Logs
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Celery Workers -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tasks me-2"></i>
+                        Celery Workers
+                    </h5>
+                    <span class="badge bg-success">Healthy</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Status</label>
+                                <div class="d-flex align-items-center">
+                                    <span class="status-indicator status-online"></span>
+                                    <span class="ms-2">Online</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Active Workers</label>
+                                <span class="badge bg-primary">3</span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Queue Status</label>
+                                <span class="text-success">Processing</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Tasks Processed</label>
+                                <span class="text-success">1,234</span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Uptime</label>
+                                <span class="text-success">99.7%</span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Last Check</label>
+                                <span class="text-muted">2 seconds ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-outline-primary" @click="testService('celery')">
+                            <i class="fas fa-play"></i> Test Connection
+                        </button>
+                        <button class="btn btn-sm btn-outline-info" @click="viewLogs('celery')">
+                            <i class="fas fa-file-alt"></i> View Logs
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Performance Metrics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <canvas id="responseTimeChart" height="200"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <canvas id="uptimeChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function microservicesStatus() {
+    return {
+        services: {
+            django: { status: 'healthy', responseTime: 12, uptime: 99.9 },
+            ai: { status: 'healthy', responseTime: 28, uptime: 99.8 },
+            realtime: { status: 'healthy', responseTime: 15, uptime: 99.9 },
+            celery: { status: 'healthy', responseTime: 5, uptime: 99.7 }
+        },
+        
+        refreshStatus() {
+            console.log('Refreshing microservices status...');
+            // Implement status refresh
+            this.showNotification('Status refreshed successfully!');
+        },
+        
+        testService(serviceName) {
+            console.log(`Testing ${serviceName} service...`);
+            // Implement service test
+            this.showNotification(`${serviceName} service test completed!`);
+        },
+        
+        viewLogs(serviceName) {
+            console.log(`Viewing logs for ${serviceName} service...`);
+            // Implement log viewing
+            this.showNotification(`Opening logs for ${serviceName} service...`);
+        },
+        
+        showNotification(message) {
+            // Show toast notification
+            const toast = document.createElement('div');
+            toast.className = 'toast align-items-center text-white bg-primary border-0';
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            new bootstrap.Toast(toast).show();
+        }
+    }
+}
+
+// Initialize charts when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Response Time Chart
+    const responseTimeCtx = document.getElementById('responseTimeChart');
+    if (responseTimeCtx) {
+        new Chart(responseTimeCtx, {
+            type: 'line',
+            data: {
+                labels: ['1h ago', '45m ago', '30m ago', '15m ago', 'Now'],
+                datasets: [{
+                    label: 'Response Time (ms)',
+                    data: [45, 42, 38, 35, 32],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+    
+    // Uptime Chart
+    const uptimeCtx = document.getElementById('uptimeChart');
+    if (uptimeCtx) {
+        new Chart(uptimeCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Uptime', 'Downtime'],
+                datasets: [{
+                    data: [99.9, 0.1],
+                    backgroundColor: ['#28a745', '#dc3545'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

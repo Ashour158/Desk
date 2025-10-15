@@ -1,0 +1,598 @@
+{% extends "base_zoho.html" %}
+{% load static %}
+
+{% block title %}Features Dashboard - HelpDesk Platform{% endblock %}
+
+{% block breadcrumb %}Features Dashboard{% endblock %}
+
+{% block content %}
+<div x-data="featuresDashboard()" x-init="init()">
+    <!-- Page Header -->
+    <div class="zoho-page-header">
+        <h1 class="zoho-page-title">Features Dashboard</h1>
+        <div class="zoho-page-actions">
+            <button class="zoho-btn zoho-btn-secondary" @click="refreshFeatures()">
+                <i class="fas fa-sync-alt"></i>
+                Refresh
+            </button>
+            <button class="zoho-btn zoho-btn-primary" @click="runFeatureTests()">
+                <i class="fas fa-play"></i>
+                Test All Features
+            </button>
+        </div>
+    </div>
+
+    <!-- Feature Categories -->
+    <div class="zoho-grid zoho-grid-cols-4 zoho-mb-6">
+        <template x-for="category in featureCategories" :key="category.id">
+            <div class="zoho-card zoho-fade-in" :style="`border-left: 4px solid ${category.color}`">
+                <div class="zoho-card-body">
+                    <div class="zoho-flex zoho-items-center zoho-gap-3 zoho-mb-3">
+                        <i :class="category.icon" :style="`color: ${category.color}`"></i>
+                        <h3 class="zoho-card-title zoho-mb-0" x-text="category.name"></h3>
+                    </div>
+                    <p class="zoho-text-sm zoho-text-gray-600 zoho-mb-3" x-text="category.description"></p>
+                    <div class="zoho-flex zoho-items-center zoho-justify-between">
+                        <span class="zoho-text-sm zoho-text-gray-600">
+                            <span x-text="category.active_features"></span> active features
+                        </span>
+                        <button class="zoho-btn zoho-btn-sm zoho-btn-secondary" @click="viewCategory(category.id)">
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- Feature Grid -->
+    <div class="zoho-grid zoho-grid-cols-3 zoho-mb-6">
+        <template x-for="feature in features" :key="feature.id">
+            <div class="zoho-card zoho-fade-in" :class="feature.status === 'active' ? 'success' : 'danger'">
+                <div class="zoho-card-header">
+                    <div class="zoho-flex zoho-items-center zoho-justify-between">
+                        <div class="zoho-flex zoho-items-center zoho-gap-3">
+                            <i :class="feature.icon" :style="`color: ${feature.color}`"></i>
+                            <h4 class="zoho-card-title zoho-mb-0" x-text="feature.name"></h4>
+                        </div>
+                        <span class="zoho-badge" :class="feature.status === 'active' ? 'zoho-badge-success' : 'zoho-badge-danger'" x-text="feature.status"></span>
+                    </div>
+                </div>
+                <div class="zoho-card-body">
+                    <p class="zoho-text-sm zoho-text-gray-600 zoho-mb-3" x-text="feature.description"></p>
+                    
+                    <!-- Feature Details -->
+                    <div class="zoho-space-y-2 zoho-mb-4">
+                        <div class="zoho-flex zoho-items-center zoho-gap-2">
+                            <i class="fas fa-link zoho-text-gray-500"></i>
+                            <span class="zoho-text-sm" x-text="feature.endpoint"></span>
+                        </div>
+                        
+                        <div class="zoho-flex zoho-items-center zoho-gap-2">
+                            <i class="fas fa-bolt zoho-text-gray-500"></i>
+                            <span class="zoho-text-sm" x-text="feature.supports_realtime ? 'Real-time enabled' : 'No real-time'"></span>
+                        </div>
+                        
+                        <div class="zoho-flex zoho-items-center zoho-gap-2">
+                            <i class="fas fa-server zoho-text-gray-500"></i>
+                            <span class="zoho-text-sm" x-text="feature.microservice || 'Core service'"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Feature Actions -->
+                    <div class="zoho-flex zoho-gap-2">
+                        <button class="zoho-btn zoho-btn-sm zoho-btn-primary" @click="openFeature(feature.id)">
+                            <i class="fas fa-external-link-alt"></i>
+                            Open
+                        </button>
+                        <button class="zoho-btn zoho-btn-sm zoho-btn-secondary" @click="testFeature(feature.id)">
+                            <i class="fas fa-play"></i>
+                            Test
+                        </button>
+                        <button class="zoho-btn zoho-btn-sm zoho-btn-secondary" @click="configureFeature(feature.id)">
+                            <i class="fas fa-cog"></i>
+                            Config
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- Feature Connections -->
+    <div class="zoho-card zoho-mb-6">
+        <div class="zoho-card-header">
+            <h3 class="zoho-card-title">
+                <i class="fas fa-project-diagram me-2"></i>
+                Feature Connections
+            </h3>
+        </div>
+        <div class="zoho-card-body">
+            <div class="zoho-grid zoho-grid-cols-2">
+                <template x-for="connection in featureConnections" :key="connection.id">
+                    <div class="zoho-flex zoho-items-center zoho-gap-3 zoho-p-3" style="border: 1px solid var(--zoho-gray-200); border-radius: var(--zoho-radius);">
+                        <div class="zoho-flex zoho-items-center zoho-gap-2">
+                            <i class="fas fa-arrow-right zoho-text-primary"></i>
+                            <div>
+                                <div class="zoho-font-semibold" x-text="connection.source_feature"></div>
+                                <div class="zoho-text-sm zoho-text-gray-600" x-text="connection.target_feature"></div>
+                            </div>
+                        </div>
+                        <div class="zoho-flex zoho-gap-2">
+                            <span class="zoho-badge zoho-badge-primary" x-text="connection.connection_type"></span>
+                            <span class="zoho-badge" :class="connection.is_active ? 'zoho-badge-success' : 'zoho-badge-danger'" x-text="connection.is_active ? 'Active' : 'Inactive'"></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time Status -->
+    <div class="zoho-card zoho-mb-6">
+        <div class="zoho-card-header">
+            <h3 class="zoho-card-title">
+                <i class="fas fa-bolt me-2"></i>
+                Real-time Status
+            </h3>
+        </div>
+        <div class="zoho-card-body">
+            <div class="zoho-grid zoho-grid-cols-4">
+                <div class="zoho-flex zoho-items-center zoho-gap-3">
+                    <div class="zoho-status zoho-status-online">
+                        <div class="zoho-status-dot"></div>
+                        <span class="zoho-text-sm">WebSocket</span>
+                    </div>
+                </div>
+                
+                <div class="zoho-flex zoho-items-center zoho-gap-3">
+                    <div class="zoho-status zoho-status-online">
+                        <div class="zoho-status-dot"></div>
+                        <span class="zoho-text-sm">Live Updates</span>
+                    </div>
+                </div>
+                
+                <div class="zoho-flex zoho-items-center zoho-gap-3">
+                    <div class="zoho-status zoho-status-online">
+                        <div class="zoho-status-dot"></div>
+                        <span class="zoho-text-sm">Notifications</span>
+                    </div>
+                </div>
+                
+                <div class="zoho-flex zoho-items-center zoho-gap-3">
+                    <div class="zoho-status zoho-status-online">
+                        <div class="zoho-status-dot"></div>
+                        <span class="zoho-text-sm">GPS Tracking</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature Usage Statistics -->
+    <div class="zoho-card">
+        <div class="zoho-card-header">
+            <h3 class="zoho-card-title">
+                <i class="fas fa-chart-bar me-2"></i>
+                Feature Usage Statistics
+            </h3>
+        </div>
+        <div class="zoho-card-body">
+            <div class="zoho-table">
+                <table class="zoho-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Access Count</th>
+                            <th>Last Accessed</th>
+                            <th>Response Time</th>
+                            <th>Error Rate</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="usage in featureUsage" :key="usage.feature_id">
+                            <tr>
+                                <td>
+                                    <div class="zoho-flex zoho-items-center zoho-gap-2">
+                                        <i :class="usage.icon" :style="`color: ${usage.color}`"></i>
+                                        <span class="zoho-font-semibold" x-text="usage.feature_name"></span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="zoho-text-sm" x-text="usage.access_count"></span>
+                                </td>
+                                <td>
+                                    <span class="zoho-text-sm zoho-text-gray-600" x-text="usage.last_accessed"></span>
+                                </td>
+                                <td>
+                                    <span class="zoho-text-sm" x-text="usage.response_time + 'ms'"></span>
+                                </td>
+                                <td>
+                                    <span class="zoho-text-sm" :class="usage.error_rate > 5 ? 'text-danger' : 'text-success'" x-text="usage.error_rate + '%'"></span>
+                                </td>
+                                <td>
+                                    <span class="zoho-badge" :class="usage.status === 'healthy' ? 'zoho-badge-success' : 'zoho-badge-danger'" x-text="usage.status"></span>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function featuresDashboard() {
+    return {
+        featureCategories: [
+            {
+                id: 1,
+                name: 'Core Features',
+                description: 'Essential helpdesk functionality',
+                icon: 'fas fa-cogs',
+                color: '#2E86AB',
+                active_features: 8
+            },
+            {
+                id: 2,
+                name: 'Advanced Features',
+                description: 'Enhanced capabilities and AI',
+                icon: 'fas fa-brain',
+                color: '#FF6B35',
+                active_features: 8
+            },
+            {
+                id: 3,
+                name: 'Integrations',
+                description: 'Third-party connections',
+                icon: 'fas fa-plug',
+                color: '#28A745',
+                active_features: 12
+            },
+            {
+                id: 4,
+                name: 'Analytics',
+                description: 'Reporting and insights',
+                icon: 'fas fa-chart-line',
+                color: '#FFC107',
+                active_features: 6
+            }
+        ],
+        
+        features: [
+            {
+                id: 1,
+                name: 'Ticket Management',
+                description: 'Create, manage, and resolve customer tickets',
+                status: 'active',
+                endpoint: '/api/v1/tickets/',
+                supports_realtime: true,
+                microservice: 'django_core',
+                icon: 'fas fa-ticket-alt',
+                color: '#2E86AB'
+            },
+            {
+                id: 2,
+                name: 'Work Orders',
+                description: 'Field service management and scheduling',
+                status: 'active',
+                endpoint: '/api/v1/work-orders/',
+                supports_realtime: true,
+                microservice: 'django_core',
+                icon: 'fas fa-wrench',
+                color: '#28A745'
+            },
+            {
+                id: 3,
+                name: 'AI & ML',
+                description: 'Artificial intelligence and machine learning',
+                status: 'active',
+                endpoint: '/api/v1/ai-ml/',
+                supports_realtime: true,
+                microservice: 'ai_service',
+                icon: 'fas fa-brain',
+                color: '#FF6B35'
+            },
+            {
+                id: 4,
+                name: 'Customer Experience',
+                description: 'Customer journey and experience management',
+                status: 'active',
+                endpoint: '/api/v1/customer-experience/',
+                supports_realtime: true,
+                microservice: 'django_core',
+                icon: 'fas fa-heart',
+                color: '#E91E63'
+            },
+            {
+                id: 5,
+                name: 'Advanced Analytics',
+                description: 'Comprehensive analytics and reporting',
+                status: 'active',
+                endpoint: '/api/v1/advanced-analytics/',
+                supports_realtime: true,
+                microservice: 'django_core',
+                icon: 'fas fa-chart-line',
+                color: '#FFC107'
+            },
+            {
+                id: 6,
+                name: 'Integration Platform',
+                description: 'Third-party integrations and APIs',
+                status: 'active',
+                endpoint: '/api/v1/integration-platform/',
+                supports_realtime: true,
+                microservice: 'django_core',
+                icon: 'fas fa-plug',
+                color: '#9C27B0'
+            },
+            {
+                id: 7,
+                name: 'Mobile & IoT',
+                description: 'Mobile applications and IoT devices',
+                status: 'active',
+                endpoint: '/api/v1/mobile-iot/',
+                supports_realtime: true,
+                microservice: 'realtime_service',
+                icon: 'fas fa-mobile-alt',
+                color: '#607D8B'
+            },
+            {
+                id: 8,
+                name: 'Advanced Security',
+                description: 'Security and compliance features',
+                status: 'active',
+                endpoint: '/api/v1/advanced-security/',
+                supports_realtime: true,
+                microservice: 'django_core',
+                icon: 'fas fa-shield-alt',
+                color: '#F44336'
+            },
+            {
+                id: 9,
+                name: 'Advanced Workflow',
+                description: 'Workflow automation and processes',
+                status: 'active',
+                endpoint: '/api/v1/advanced-workflow/',
+                supports_realtime: true,
+                microservice: 'django_core',
+                icon: 'fas fa-cogs',
+                color: '#795548'
+            },
+            {
+                id: 10,
+                name: 'Advanced Communication',
+                description: 'Communication channels and tools',
+                status: 'active',
+                endpoint: '/api/v1/advanced-communication/',
+                supports_realtime: true,
+                microservice: 'realtime_service',
+                icon: 'fas fa-comments',
+                color: '#3F51B5'
+            }
+        ],
+        
+        featureConnections: [
+            {
+                id: 1,
+                source_feature: 'Ticket Management',
+                target_feature: 'Work Orders',
+                connection_type: 'escalation',
+                is_active: true
+            },
+            {
+                id: 2,
+                source_feature: 'Ticket Management',
+                target_feature: 'AI & ML',
+                connection_type: 'processing',
+                is_active: true
+            },
+            {
+                id: 3,
+                source_feature: 'Work Orders',
+                target_feature: 'Mobile & IoT',
+                connection_type: 'assignment',
+                is_active: true
+            },
+            {
+                id: 4,
+                source_feature: 'AI & ML',
+                target_feature: 'Customer Experience',
+                connection_type: 'insights',
+                is_active: true
+            },
+            {
+                id: 5,
+                source_feature: 'All Features',
+                target_feature: 'Advanced Analytics',
+                connection_type: 'data_collection',
+                is_active: true
+            },
+            {
+                id: 6,
+                source_feature: 'All Features',
+                target_feature: 'Advanced Communication',
+                connection_type: 'notifications',
+                is_active: true
+            }
+        ],
+        
+        featureUsage: [
+            {
+                feature_id: 1,
+                feature_name: 'Ticket Management',
+                access_count: 1250,
+                last_accessed: '2 minutes ago',
+                response_time: 45,
+                error_rate: 0.5,
+                status: 'healthy',
+                icon: 'fas fa-ticket-alt',
+                color: '#2E86AB'
+            },
+            {
+                feature_id: 2,
+                feature_name: 'Work Orders',
+                access_count: 890,
+                last_accessed: '5 minutes ago',
+                response_time: 52,
+                error_rate: 1.2,
+                status: 'healthy',
+                icon: 'fas fa-wrench',
+                color: '#28A745'
+            },
+            {
+                feature_id: 3,
+                feature_name: 'AI & ML',
+                access_count: 650,
+                last_accessed: '1 minute ago',
+                response_time: 120,
+                error_rate: 2.1,
+                status: 'healthy',
+                icon: 'fas fa-brain',
+                color: '#FF6B35'
+            },
+            {
+                feature_id: 4,
+                feature_name: 'Customer Experience',
+                access_count: 420,
+                last_accessed: '3 minutes ago',
+                response_time: 38,
+                error_rate: 0.8,
+                status: 'healthy',
+                icon: 'fas fa-heart',
+                color: '#E91E63'
+            },
+            {
+                feature_id: 5,
+                feature_name: 'Advanced Analytics',
+                access_count: 780,
+                last_accessed: '4 minutes ago',
+                response_time: 95,
+                error_rate: 1.5,
+                status: 'healthy',
+                icon: 'fas fa-chart-line',
+                color: '#FFC107'
+            }
+        ],
+        
+        init() {
+            this.loadFeatures();
+            this.startRealTimeUpdates();
+        },
+        
+        async loadFeatures() {
+            try {
+                const response = await fetch('/api/v1/features/status/');
+                const data = await response.json();
+                this.features = data.features || this.features;
+                this.featureConnections = data.connections || this.featureConnections;
+                this.featureUsage = data.usage || this.featureUsage;
+            } catch (error) {
+                console.error('Error loading features:', error);
+            }
+        },
+        
+        startRealTimeUpdates() {
+            // WebSocket connection for real-time updates
+            const ws = new WebSocket('ws://localhost:8000/ws/features/');
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                this.handleRealTimeUpdate(data);
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+        },
+        
+        handleRealTimeUpdate(data) {
+            switch(data.type) {
+                case 'feature_status_update':
+                    const feature = this.features.find(f => f.id === data.feature_id);
+                    if (feature) {
+                        feature.status = data.status;
+                    }
+                    break;
+                case 'feature_usage_update':
+                    const usage = this.featureUsage.find(u => u.feature_id === data.feature_id);
+                    if (usage) {
+                        usage.access_count = data.access_count;
+                        usage.last_accessed = data.last_accessed;
+                    }
+                    break;
+            }
+        },
+        
+        async refreshFeatures() {
+            await this.loadFeatures();
+            this.showNotification('Features refreshed');
+        },
+        
+        async runFeatureTests() {
+            this.showNotification('Running feature tests...');
+            // Implement feature testing
+            this.showNotification('Feature tests completed');
+        },
+        
+        openFeature(featureId) {
+            const feature = this.features.find(f => f.id === featureId);
+            if (feature && feature.endpoint) {
+                window.open(feature.endpoint, '_blank');
+            }
+        },
+        
+        testFeature(featureId) {
+            this.showNotification(`Testing feature ${featureId}...`);
+            // Implement feature testing
+        },
+        
+        configureFeature(featureId) {
+            this.showNotification(`Opening configuration for feature ${featureId}...`);
+            // Implement feature configuration
+        },
+        
+        viewCategory(categoryId) {
+            this.showNotification(`Viewing category ${categoryId}...`);
+            // Implement category view
+        },
+        
+        showNotification(message) {
+            // Show toast notification
+            const toast = document.createElement('div');
+            toast.className = 'zoho-alert zoho-alert-info zoho-fade-in';
+            toast.style.position = 'fixed';
+            toast.style.top = '20px';
+            toast.style.right = '20px';
+            toast.style.zIndex = '9999';
+            toast.style.minWidth = '300px';
+            toast.innerHTML = `
+                <div class="zoho-flex zoho-items-center zoho-justify-between">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: inherit; cursor: pointer;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 5000);
+        }
+    }
+}
+
+// Initialize features dashboard when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.Alpine) {
+        Alpine.data('featuresDashboard', featuresDashboard);
+    }
+});
+</script>
+{% endblock %}

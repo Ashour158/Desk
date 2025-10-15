@@ -1,0 +1,378 @@
+{% extends "base_zoho.html" %}
+{% load static %}
+
+{% block title %}Ticket #1234 - HelpDesk Platform{% endblock %}
+
+{% block breadcrumb %}Tickets / #1234{% endblock %}
+
+{% block content %}
+<div x-data="ticketDetailApp()">
+    <!-- Page Header -->
+    <div class="zoho-page-header">
+        <div class="zoho-flex zoho-items-center zoho-gap-4">
+            <div class="zoho-user-avatar" style="width: 40px; height: 40px; background-color: var(--zoho-primary);">
+                <i class="fas fa-ticket-alt" style="color: white; font-size: 16px;"></i>
+            </div>
+            <div>
+                <h1 class="zoho-page-title">#1234 - Login Issue</h1>
+                <div class="zoho-flex zoho-items-center zoho-gap-4 zoho-mt-2">
+                    <span class="zoho-badge zoho-badge-warning">Open</span>
+                    <span class="zoho-badge zoho-badge-danger">High Priority</span>
+                    <span class="zoho-text-sm zoho-text-gray-600">Created 2 hours ago by John Doe</span>
+                </div>
+            </div>
+        </div>
+        <div class="zoho-page-actions">
+            <div class="zoho-flex zoho-gap-3">
+                <button class="zoho-btn zoho-btn-secondary">
+                    <i class="fas fa-edit"></i>
+                    Edit
+                </button>
+                <button class="zoho-btn zoho-btn-secondary">
+                    <i class="fas fa-copy"></i>
+                    Duplicate
+                </button>
+                <button class="zoho-btn zoho-btn-primary">
+                    <i class="fas fa-reply"></i>
+                    Reply
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="zoho-grid zoho-grid-cols-3">
+        <!-- Ticket Details -->
+        <div class="zoho-grid-cols-2">
+            <div class="zoho-card zoho-mb-6">
+                <div class="zoho-card-header">
+                    <h3 class="zoho-card-title">Ticket Details</h3>
+                </div>
+                <div class="zoho-card-body">
+                    <div class="zoho-space-y-4">
+                        <div>
+                            <label class="zoho-form-label">Subject</label>
+                            <div class="zoho-text-sm">Login Issue - Cannot access account</div>
+                        </div>
+                        
+                        <div>
+                            <label class="zoho-form-label">Description</label>
+                            <div class="zoho-text-sm zoho-text-gray-700">
+                                I'm unable to log into my account. When I enter my credentials, I get an error message saying "Invalid username or password". I've tried resetting my password but haven't received the reset email. This is urgent as I need to access my account for work.
+                            </div>
+                        </div>
+                        
+                        <div class="zoho-grid zoho-grid-cols-2">
+                            <div>
+                                <label class="zoho-form-label">Customer</label>
+                                <div class="zoho-flex zoho-items-center zoho-gap-2">
+                                    <div class="zoho-user-avatar" style="width: 24px; height: 24px; font-size: 10px;">JD</div>
+                                    <div>
+                                        <div class="zoho-text-sm zoho-font-semibold">John Doe</div>
+                                        <div class="zoho-text-xs zoho-text-gray-600">john.doe@company.com</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="zoho-form-label">Assigned Agent</label>
+                                <div class="zoho-flex zoho-items-center zoho-gap-2">
+                                    <div class="zoho-user-avatar" style="width: 24px; height: 24px; font-size: 10px;">SM</div>
+                                    <div>
+                                        <div class="zoho-text-sm zoho-font-semibold">Sarah Miller</div>
+                                        <div class="zoho-text-xs zoho-text-gray-600">Support Agent</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="zoho-grid zoho-grid-cols-2">
+                            <div>
+                                <label class="zoho-form-label">Status</label>
+                                <div>
+                                    <span class="zoho-badge zoho-badge-warning">Open</span>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="zoho-form-label">Priority</label>
+                                <div>
+                                    <span class="zoho-badge zoho-badge-danger">High</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="zoho-grid zoho-grid-cols-2">
+                            <div>
+                                <label class="zoho-form-label">Created</label>
+                                <div class="zoho-text-sm">Dec 15, 2023 at 2:30 PM</div>
+                            </div>
+                            
+                            <div>
+                                <label class="zoho-form-label">Last Updated</label>
+                                <div class="zoho-text-sm">Dec 15, 2023 at 4:15 PM</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comments -->
+            <div class="zoho-card">
+                <div class="zoho-card-header">
+                    <h3 class="zoho-card-title">Comments</h3>
+                </div>
+                <div class="zoho-card-body">
+                    <div class="zoho-space-y-4">
+                        <!-- Comment 1 -->
+                        <div class="zoho-flex zoho-gap-3">
+                            <div class="zoho-user-avatar" style="width: 32px; height: 32px; font-size: 12px;">JD</div>
+                            <div class="zoho-flex-1">
+                                <div class="zoho-flex zoho-items-center zoho-gap-2 zoho-mb-2">
+                                    <span class="zoho-text-sm zoho-font-semibold">John Doe</span>
+                                    <span class="zoho-text-xs zoho-text-gray-600">Customer</span>
+                                    <span class="zoho-text-xs zoho-text-gray-600">•</span>
+                                    <span class="zoho-text-xs zoho-text-gray-600">2 hours ago</span>
+                                </div>
+                                <div class="zoho-text-sm zoho-text-gray-700 zoho-mb-2">
+                                    I'm still unable to log in. I've tried multiple times and even cleared my browser cache. The error message keeps appearing. Please help me resolve this issue as soon as possible.
+                                </div>
+                                <div class="zoho-flex zoho-gap-2">
+                                    <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">
+                                        <i class="fas fa-reply"></i>
+                                        Reply
+                                    </button>
+                                    <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">
+                                        <i class="fas fa-thumbs-up"></i>
+                                        Helpful
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Comment 2 -->
+                        <div class="zoho-flex zoho-gap-3">
+                            <div class="zoho-user-avatar" style="width: 32px; height: 32px; font-size: 12px;">SM</div>
+                            <div class="zoho-flex-1">
+                                <div class="zoho-flex zoho-items-center zoho-gap-2 zoho-mb-2">
+                                    <span class="zoho-text-sm zoho-font-semibold">Sarah Miller</span>
+                                    <span class="zoho-text-xs zoho-text-gray-600">Support Agent</span>
+                                    <span class="zoho-text-xs zoho-text-gray-600">•</span>
+                                    <span class="zoho-text-xs zoho-text-gray-600">1 hour ago</span>
+                                </div>
+                                <div class="zoho-text-sm zoho-text-gray-700 zoho-mb-2">
+                                    Hi John, I understand your frustration. I've checked your account and it appears to be in good standing. Let me help you troubleshoot this step by step:
+                                    <br><br>
+                                    1. First, please try logging in from an incognito/private browser window
+                                    2. If that doesn't work, try a different browser
+                                    3. Make sure you're using the correct email address
+                                    <br><br>
+                                    If none of these steps work, I'll escalate this to our technical team for further investigation.
+                                </div>
+                                <div class="zoho-flex zoho-gap-2">
+                                    <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">
+                                        <i class="fas fa-reply"></i>
+                                        Reply
+                                    </button>
+                                    <button class="zoho-btn zoho-btn-sm zoho-btn-secondary">
+                                        <i class="fas fa-thumbs-up"></i>
+                                        Helpful
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Add Comment Form -->
+                    <div class="zoho-mt-6" style="border-top: 1px solid var(--zoho-gray-200); padding-top: var(--zoho-space-4);">
+                        <div class="zoho-form-group">
+                            <label class="zoho-form-label">Add Comment</label>
+                            <textarea class="zoho-form-control" rows="4" placeholder="Type your comment here..."></textarea>
+                        </div>
+                        <div class="zoho-flex zoho-gap-2 zoho-mt-3">
+                            <button class="zoho-btn zoho-btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                                Post Comment
+                            </button>
+                            <button class="zoho-btn zoho-btn-secondary">
+                                <i class="fas fa-paperclip"></i>
+                                Attach File
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+            <!-- Quick Actions -->
+            <div class="zoho-card zoho-mb-6">
+                <div class="zoho-card-header">
+                    <h3 class="zoho-card-title">Quick Actions</h3>
+                </div>
+                <div class="zoho-card-body">
+                    <div class="zoho-space-y-3">
+                        <button class="zoho-btn zoho-btn-primary zoho-w-full">
+                            <i class="fas fa-reply"></i>
+                            Reply to Customer
+                        </button>
+                        <button class="zoho-btn zoho-btn-secondary zoho-w-full">
+                            <i class="fas fa-user-plus"></i>
+                            Assign to Agent
+                        </button>
+                        <button class="zoho-btn zoho-btn-secondary zoho-w-full">
+                            <i class="fas fa-tag"></i>
+                            Add Tags
+                        </button>
+                        <button class="zoho-btn zoho-btn-secondary zoho-w-full">
+                            <i class="fas fa-clock"></i>
+                            Set Due Date
+                        </button>
+                        <button class="zoho-btn zoho-btn-secondary zoho-w-full">
+                            <i class="fas fa-merge"></i>
+                            Merge Tickets
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ticket Properties -->
+            <div class="zoho-card zoho-mb-6">
+                <div class="zoho-card-header">
+                    <h3 class="zoho-card-title">Properties</h3>
+                </div>
+                <div class="zoho-card-body">
+                    <div class="zoho-space-y-4">
+                        <div>
+                            <label class="zoho-form-label">Department</label>
+                            <select class="zoho-form-control">
+                                <option>Technical Support</option>
+                                <option>Billing</option>
+                                <option>Sales</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="zoho-form-label">Category</label>
+                            <select class="zoho-form-control">
+                                <option>Login Issues</option>
+                                <option>Password Reset</option>
+                                <option>Account Access</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="zoho-form-label">Tags</label>
+                            <div class="zoho-flex zoho-gap-2 zoho-mb-2">
+                                <span class="zoho-badge zoho-badge-gray">login</span>
+                                <span class="zoho-badge zoho-badge-gray">urgent</span>
+                                <span class="zoho-badge zoho-badge-gray">authentication</span>
+                            </div>
+                            <input type="text" class="zoho-form-control" placeholder="Add tags...">
+                        </div>
+                        
+                        <div>
+                            <label class="zoho-form-label">Due Date</label>
+                            <input type="datetime-local" class="zoho-form-control" value="2023-12-16T18:00">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Info -->
+            <div class="zoho-card zoho-mb-6">
+                <div class="zoho-card-header">
+                    <h3 class="zoho-card-title">Customer Info</h3>
+                </div>
+                <div class="zoho-card-body">
+                    <div class="zoho-space-y-4">
+                        <div class="zoho-flex zoho-items-center zoho-gap-3">
+                            <div class="zoho-user-avatar" style="width: 40px; height: 40px; font-size: 14px;">JD</div>
+                            <div>
+                                <div class="zoho-font-semibold">John Doe</div>
+                                <div class="zoho-text-sm zoho-text-gray-600">john.doe@company.com</div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="zoho-form-label">Company</label>
+                            <div class="zoho-text-sm">Acme Corporation</div>
+                        </div>
+                        
+                        <div>
+                            <label class="zoho-form-label">Phone</label>
+                            <div class="zoho-text-sm">+1 (555) 123-4567</div>
+                        </div>
+                        
+                        <div>
+                            <label class="zoho-form-label">Customer Since</label>
+                            <div class="zoho-text-sm">Jan 2022</div>
+                        </div>
+                        
+                        <div>
+                            <label class="zoho-form-label">Total Tickets</label>
+                            <div class="zoho-text-sm">12 (3 open, 9 resolved)</div>
+                        </div>
+                        
+                        <div>
+                            <label class="zoho-form-label">Satisfaction Score</label>
+                            <div class="zoho-text-sm zoho-text-success">4.8/5.0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Tickets -->
+            <div class="zoho-card">
+                <div class="zoho-card-header">
+                    <h3 class="zoho-card-title">Related Tickets</h3>
+                </div>
+                <div class="zoho-card-body">
+                    <div class="zoho-space-y-3">
+                        <div class="zoho-flex zoho-items-center zoho-gap-3">
+                            <div class="zoho-user-avatar" style="width: 24px; height: 24px; background-color: var(--zoho-success);">
+                                <i class="fas fa-ticket-alt" style="color: white; font-size: 10px;"></i>
+                            </div>
+                            <div class="zoho-flex-1">
+                                <div class="zoho-text-sm zoho-font-semibold">#1230</div>
+                                <div class="zoho-text-xs zoho-text-gray-600">Password Reset - Same Customer</div>
+                                <span class="zoho-badge zoho-badge-success" style="font-size: 10px;">Resolved</span>
+                            </div>
+                        </div>
+                        
+                        <div class="zoho-flex zoho-items-center zoho-gap-3">
+                            <div class="zoho-user-avatar" style="width: 24px; height: 24px; background-color: var(--zoho-primary);">
+                                <i class="fas fa-ticket-alt" style="color: white; font-size: 10px;"></i>
+                            </div>
+                            <div class="zoho-flex-1">
+                                <div class="zoho-text-sm zoho-font-semibold">#1228</div>
+                                <div class="zoho-text-xs zoho-text-gray-600">Account Lockout - Similar Issue</div>
+                                <span class="zoho-badge zoho-badge-warning" style="font-size: 10px;">Open</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function ticketDetailApp() {
+    return {
+        // Initialize ticket detail functionality
+        init() {
+            console.log('Ticket detail page initialized');
+        }
+    }
+}
+
+// Initialize ticket detail app when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.Alpine) {
+        Alpine.data('ticketDetailApp', ticketDetailApp);
+    }
+});
+</script>
+{% endblock %}

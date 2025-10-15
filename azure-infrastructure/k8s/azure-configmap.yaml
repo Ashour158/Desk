@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: helpdesk-config
+  namespace: helpdesk
+data:
+  # Django Settings
+  DJANGO_SETTINGS_MODULE: "config.settings.production"
+  DEBUG: "False"
+  ALLOWED_HOSTS: "localhost,127.0.0.1,your-domain.com,helpdesk-frontend.azurefd.net"
+  CORS_ALLOWED_ORIGINS: "https://your-domain.com,https://app.your-domain.com,https://helpdesk-frontend.azurefd.net"
+  
+  # Azure Database Configuration
+  DB_HOST: "helpdesk-production-postgres.postgres.database.azure.com"
+  DB_NAME: "helpdesk"
+  DB_USER: "helpdesk_admin"
+  DB_PORT: "5432"
+  DB_SSLMODE: "require"
+  
+  # Azure Redis Configuration
+  REDIS_URL: "redis://helpdesk-production-redis.redis.cache.windows.net:6380"
+  CELERY_BROKER_URL: "redis://helpdesk-production-redis.redis.cache.windows.net:6380"
+  CELERY_RESULT_BACKEND: "redis://helpdesk-production-redis.redis.cache.windows.net:6380"
+  
+  # Microsoft 365 Email Configuration
+  EMAIL_BACKEND: "django.core.mail.backends.smtp.EmailBackend"
+  EMAIL_HOST: "smtp.office365.com"
+  EMAIL_PORT: "587"
+  EMAIL_USE_TLS: "True"
+  EMAIL_USE_SSL: "False"
+  DEFAULT_FROM_EMAIL: "helpdesk@your-domain.com"
+  
+  # Azure Storage Configuration
+  AZURE_ACCOUNT_NAME: "helpdeskproductionstatic"
+  AZURE_ACCOUNT_KEY: ""  # Will be set from Key Vault
+  AZURE_CONTAINER: "static"
+  AZURE_CUSTOM_DOMAIN: "helpdeskproductionstatic.blob.core.windows.net"
+  
+  # Microsoft Graph API Configuration
+  MICROSOFT_GRAPH_CLIENT_ID: ""  # Will be set from Key Vault
+  MICROSOFT_GRAPH_CLIENT_SECRET: ""  # Will be set from Key Vault
+  MICROSOFT_GRAPH_TENANT_ID: ""  # Will be set from Key Vault
+  
+  # Azure Application Insights
+  APPLICATION_INSIGHTS_KEY: ""  # Will be set from Key Vault
+  
+  # Security Settings
+  SECURE_BROWSER_XSS_FILTER: "True"
+  SECURE_CONTENT_TYPE_NOSNIFF: "True"
+  X_FRAME_OPTIONS: "DENY"
+  SECURE_HSTS_SECONDS: "31536000"
+  SECURE_HSTS_INCLUDE_SUBDOMAINS: "True"
+  SECURE_HSTS_PRELOAD: "True"
+  
+  # File Upload Settings
+  FILE_UPLOAD_MAX_MEMORY_SIZE: "10485760"  # 10MB
+  DATA_UPLOAD_MAX_MEMORY_SIZE: "10485760"  # 10MB
+  FILE_UPLOAD_MAX_SIZE: "10485760"  # 10MB
+  
+  # Cache Settings
+  CACHE_TTL: "300"
+  
+  # Business Hours
+  BUSINESS_HOURS_START: "9"
+  BUSINESS_HOURS_END: "17"
+  BUSINESS_TIMEZONE: "UTC"
+  
+  # Backup Settings
+  BACKUP_RETENTION_DAYS: "30"
+  BACKUP_COMPRESSION: "True"
+  
+  # Security Monitoring Thresholds
+  SECURITY_FAILED_LOGIN_THRESHOLD: "5"
+  SECURITY_SUSPICIOUS_ACTIVITY_THRESHOLD: "10"
+  SECURITY_DATA_BREACH_THRESHOLD: "1"
+  SECURITY_PRIVILEGE_ESCALATION_THRESHOLD: "1"
+  SECURITY_UNUSUAL_ACCESS_THRESHOLD: "3"
+  
+  # Microsoft Teams Integration
+  TEAMS_WEBHOOK_URL: ""  # Will be set from Key Vault
+  TEAMS_NOTIFICATIONS_ENABLED: "True"
+  
+  # SharePoint Integration
+  SHAREPOINT_SITE_URL: ""  # Will be set from Key Vault
+  SHAREPOINT_CLIENT_ID: ""  # Will be set from Key Vault
+  SHAREPOINT_CLIENT_SECRET: ""  # Will be set from Key Vault
+  
+  # Power BI Integration
+  POWER_BI_CLIENT_ID: ""  # Will be set from Key Vault
+  POWER_BI_CLIENT_SECRET: ""  # Will be set from Key Vault
+  POWER_BI_WORKSPACE_ID: ""  # Will be set from Key Vault

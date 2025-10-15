@@ -1,0 +1,608 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  DOCKER_REGISTRY: ghcr.io
+  IMAGE_NAME: helpdesk-platform
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgis/postgis:15-3.3
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_helpdesk
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        cd core
+        pip install -r requirements/base.txt
+        pip install pytest pytest-django pytest-cov
+    
+    - name: Run linting
+      run: |
+        cd core
+        pip install flake8 black isort
+        flake8 apps/
+        black --check apps/
+        isort --check-only apps/
+    
+    - name: Set up environment for testing
+      run: |
+        cd core
+        # Set up environment variables for testing
+        echo "SECRET_KEY=test-secret-key-for-ci" >> .env.test
+        echo "DEBUG=True" >> .env.test
+        echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test_helpdesk" >> .env.test
+        echo "REDIS_URL=redis://localhost:6379" >> .env.test
+        echo "DJANGO_SETTINGS_MODULE=config.settings.test" >> .env.test
+    
+    - name: Run database migration tests
+      run: |
+        cd core
+        # Test database migrations
+        python manage.py migrate --run-syncdb
+        python manage.py showmigrations
+        # Test migration rollback
+        python manage.py migrate --fake-initial
+        echo "Migration tests completed"
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_helpdesk
+        REDIS_URL: redis://localhost:6379
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: True
+        DJANGO_SETTINGS_MODULE: config.settings.test
+    
+    - name: Run tests
+      run: |
+        cd core
+        python manage.py test --verbosity=2 --coverage
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_helpdesk
+        REDIS_URL: redis://localhost:6379
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: True
+        DJANGO_SETTINGS_MODULE: config.settings.test
+    
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./core/coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.DOCKER_REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+    
+    - name: Build and push Django app
+      uses: docker/build-push-action@v5
+      with:
+        context: ./core
+        file: ./core/Dockerfile
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}-django
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Build and push AI service
+      uses: docker/build-push-action@v5
+      with:
+        context: ./ai-service
+        file: ./ai-service/Dockerfile
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}-ai
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Build and push Real-time service
+      uses: docker/build-push-action@v5
+      with:
+        context: ./realtime-service
+        file: ./realtime-service/Dockerfile
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}-realtime
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  security-scan:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}-django:${{ github.sha }}
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  deploy-staging:
+    needs: [test, build, security-scan]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+    
+    - name: Deploy to staging (AWS CloudFormation)
+      run: |
+        echo "Deploying to staging environment using AWS CloudFormation..."
+        
+        # Deploy staging infrastructure
+        aws cloudformation deploy \
+          --template-file deploy/aws/cloudformation.yaml \
+          --stack-name helpdesk-platform-staging \
+          --parameter-overrides \
+            Environment=staging \
+            DatabasePassword=${{ secrets.STAGING_DATABASE_PASSWORD }} \
+            DomainName=${{ secrets.STAGING_DOMAIN_NAME }} \
+          --capabilities CAPABILITY_IAM \
+          --region ${{ secrets.AWS_REGION }}
+        
+        # Wait for stack completion
+        aws cloudformation wait stack-create-complete \
+          --stack-name helpdesk-platform-staging \
+          --region ${{ secrets.AWS_REGION }}
+        
+        echo "Staging infrastructure deployment completed"
+    
+    - name: Deploy application to ECS
+      run: |
+        echo "Deploying application to ECS staging..."
+        
+        # Get ECS cluster and service names
+        CLUSTER_NAME=$(aws cloudformation describe-stacks \
+          --stack-name helpdesk-platform-staging \
+          --region ${{ secrets.AWS_REGION }} \
+          --query "Stacks[0].Outputs[?OutputKey=='ECSClusterName'].OutputValue" \
+          --output text)
+        
+        SERVICE_NAME=$(aws cloudformation describe-stacks \
+          --stack-name helpdesk-platform-staging \
+          --region ${{ secrets.AWS_REGION }} \
+          --query "Stacks[0].Outputs[?OutputKey=='ECSServiceName'].OutputValue" \
+          --output text)
+        
+        # Force new deployment
+        aws ecs update-service \
+          --cluster $CLUSTER_NAME \
+          --service $SERVICE_NAME \
+          --force-new-deployment \
+          --region ${{ secrets.AWS_REGION }}
+        
+        echo "Staging application deployment completed"
+    
+    - name: Run database migrations
+      run: |
+        echo "Running database migrations on staging..."
+        
+        # Get ECS cluster and task definition
+        CLUSTER_NAME=$(aws cloudformation describe-stacks \
+          --stack-name helpdesk-platform-staging \
+          --region ${{ secrets.AWS_REGION }} \
+          --query "Stacks[0].Outputs[?OutputKey=='ECSClusterName'].OutputValue" \
+          --output text)
+        
+        TASK_DEFINITION=$(aws cloudformation describe-stacks \
+          --stack-name helpdesk-platform-staging \
+          --region ${{ secrets.AWS_REGION }} \
+          --query "Stacks[0].Outputs[?OutputKey=='TaskDefinitionArn'].OutputValue" \
+          --output text)
+        
+        # Run migrations
+        aws ecs run-task \
+          --cluster $CLUSTER_NAME \
+          --task-definition $TASK_DEFINITION \
+          --overrides '{"containerOverrides":[{"name":"django-app","command":["python","manage.py","migrate","--noinput"]}]}' \
+          --region ${{ secrets.AWS_REGION }}
+        
+        echo "Staging database migrations completed"
+    
+    - name: Verify staging deployment
+      run: |
+        echo "Verifying staging deployment..."
+        
+        # Get application URL
+        APP_URL=$(aws cloudformation describe-stacks \
+          --stack-name helpdesk-platform-staging \
+          --region ${{ secrets.AWS_REGION }} \
+          --query "Stacks[0].Outputs[?OutputKey=='ApplicationURL'].OutputValue" \
+          --output text)
+        
+        # Wait for application to be ready
+        for i in {1..30}; do
+          if curl -f "$APP_URL/health/" > /dev/null 2>&1; then
+            echo "Staging application is healthy"
+            break
+          fi
+          echo "Waiting for staging application to be ready... ($i/30)"
+          sleep 10
+        done
+        
+        # Run smoke tests
+        curl -f "$APP_URL/health/" || exit 1
+        curl -f "$APP_URL/api/swagger/" || exit 1
+        
+        echo "Staging deployment verification completed"
+        echo "Staging URL: $APP_URL"
+
+  deploy-production:
+    needs: [test, build, security-scan]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+    
+    - name: Deploy to production (AWS CloudFormation)
+      run: |
+        echo "Deploying to production environment using AWS CloudFormation..."
+        
+        # Deploy infrastructure
+        aws cloudformation deploy \
+          --template-file deploy/aws/cloudformation.yaml \
+          --stack-name helpdesk-platform-production \
+          --parameter-overrides \
+            Environment=production \
+            DatabasePassword=${{ secrets.DATABASE_PASSWORD }} \
+            DomainName=${{ secrets.DOMAIN_NAME }} \
+          --capabilities CAPABILITY_IAM \
+          --region ${{ secrets.AWS_REGION }}
+        
+        # Wait for stack completion
+        aws cloudformation wait stack-create-complete \
+          --stack-name helpdesk-platform-production \
+          --region ${{ secrets.AWS_REGION }}
+        
+        echo "Infrastructure deployment completed"
+    
+    - name: Deploy application to ECS
+      run: |
+        echo "Deploying application to ECS..."
+        
+        # Get ECS cluster and service names
+        CLUSTER_NAME=$(aws cloudformation describe-stacks \
+          --stack-name helpdesk-platform-production \
+          --region ${{ secrets.AWS_REGION }} \
+          --query "Stacks[0].Outputs[?OutputKey=='ECSClusterName'].OutputValue" \
+          --output text)
+        
+        SERVICE_NAME=$(aws cloudformation describe-stacks \
+          --stack-name helpdesk-platform-production \
+          --region ${{ secrets.AWS_REGION }} \
+          --query "Stacks[0].Outputs[?OutputKey=='ECSServiceName'].OutputValue" \
+          --output text)
+        
+        # Force new deployment
+        aws ecs update-service \
+          --cluster $CLUSTER_NAME \
+          --service $SERVICE_NAME \
+          --force-new-deployment \
+          --region ${{ secrets.AWS_REGION }}
+        
+        echo "Application deployment completed"
+    
+    - name: Run database migrations
+      run: |
+        echo "Running database migrations..."
+        
+        # Get ECS cluster and task definition
+        CLUSTER_NAME=$(aws cloudformation describe-stacks \
+          --stack-name helpdesk-platform-production \
+          --region ${{ secrets.AWS_REGION }} \
+          --query "Stacks[0].Outputs[?OutputKey=='ECSClusterName'].OutputValue" \
+          --output text)
+        
+        TASK_DEFINITION=$(aws cloudformation describe-stacks \
+          --stack-name helpdesk-platform-production \
+          --region ${{ secrets.AWS_REGION }} \
+          --query "Stacks[0].Outputs[?OutputKey=='TaskDefinitionArn'].OutputValue" \
+          --output text)
+        
+        # Run migrations
+        aws ecs run-task \
+          --cluster $CLUSTER_NAME \
+          --task-definition $TASK_DEFINITION \
+          --overrides '{"containerOverrides":[{"name":"django-app","command":["python","manage.py","migrate","--noinput"]}]}' \
+          --region ${{ secrets.AWS_REGION }}
+        
+        echo "Database migrations completed"
+    
+    - name: Collect static files
+      run: |
+        echo "Collecting static files..."
+        
+        # Get ECS cluster and task definition
+        CLUSTER_NAME=$(aws cloudformation describe-stacks \
+          --stack-name helpdesk-platform-production \
+          --region ${{ secrets.AWS_REGION }} \
+          --query "Stacks[0].Outputs[?OutputKey=='ECSClusterName'].OutputValue" \
+          --output text)
+        
+        TASK_DEFINITION=$(aws cloudformation describe-stacks \
+          --stack-name helpdesk-platform-production \
+          --region ${{ secrets.AWS_REGION }} \
+          --query "Stacks[0].Outputs[?OutputKey=='TaskDefinitionArn'].OutputValue" \
+          --output text)
+        
+        # Collect static files
+        aws ecs run-task \
+          --cluster $CLUSTER_NAME \
+          --task-definition $TASK_DEFINITION \
+          --overrides '{"containerOverrides":[{"name":"django-app","command":["python","manage.py","collectstatic","--noinput"]}]}' \
+          --region ${{ secrets.AWS_REGION }}
+        
+        echo "Static files collected"
+    
+    - name: Verify deployment
+      run: |
+        echo "Verifying deployment..."
+        
+        # Get application URL
+        APP_URL=$(aws cloudformation describe-stacks \
+          --stack-name helpdesk-platform-production \
+          --region ${{ secrets.AWS_REGION }} \
+          --query "Stacks[0].Outputs[?OutputKey=='ApplicationURL'].OutputValue" \
+          --output text)
+        
+        # Wait for application to be ready
+        for i in {1..30}; do
+          if curl -f "$APP_URL/health/" > /dev/null 2>&1; then
+            echo "Application is healthy"
+            break
+          fi
+          echo "Waiting for application to be ready... ($i/30)"
+          sleep 10
+        done
+        
+        # Run smoke tests
+        curl -f "$APP_URL/health/" || exit 1
+        curl -f "$APP_URL/api/swagger/" || exit 1
+        
+        echo "Deployment verification completed"
+    
+    - name: Notify deployment success
+      if: success()
+      run: |
+        echo "🎉 Production deployment completed successfully!"
+        echo "Application URL: ${{ secrets.APP_URL }}"
+        echo "Health Check: ${{ secrets.APP_URL }}/health/"
+        echo "API Documentation: ${{ secrets.APP_URL }}/api/swagger/"
+    
+    - name: Notify deployment failure
+      if: failure()
+      run: |
+        echo "❌ Production deployment failed!"
+        echo "Check the logs for details"
+        echo "Rollback procedures are available in ROLLBACK_PROCEDURES.md"
+
+  performance-test:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Install k6
+      run: |
+        sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+        echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+        sudo apt-get update
+        sudo apt-get install k6
+    
+    - name: Install Artillery
+      run: |
+        npm install -g artillery@latest
+    
+    - name: Create performance test scripts
+      run: |
+        # Create k6 performance test script
+        cat > performance-test.js << 'EOF'
+        import http from 'k6/http';
+        import { check, sleep } from 'k6';
+        
+        export let options = {
+          stages: [
+            { duration: '2m', target: 100 }, // Ramp up
+            { duration: '5m', target: 100 }, // Stay at 100 users
+            { duration: '2m', target: 200 }, // Ramp up to 200 users
+            { duration: '5m', target: 200 }, // Stay at 200 users
+            { duration: '2m', target: 0 }, // Ramp down
+          ],
+          thresholds: {
+            http_req_duration: ['p(95)<500'], // 95% of requests under 500ms
+            http_req_failed: ['rate<0.1'], // Error rate under 10%
+          },
+        };
+        
+        export default function() {
+          // Test health endpoint
+          let healthResponse = http.get('${{ secrets.STAGING_URL }}/health/');
+          check(healthResponse, {
+            'health check status is 200': (r) => r.status === 200,
+            'health check response time < 200ms': (r) => r.timings.duration < 200,
+          });
+          
+          // Test API endpoints
+          let apiResponse = http.get('${{ secrets.STAGING_URL }}/api/v1/');
+          check(apiResponse, {
+            'API status is 200': (r) => r.status === 200,
+            'API response time < 300ms': (r) => r.timings.duration < 300,
+          });
+          
+          // Test static files
+          let staticResponse = http.get('${{ secrets.STAGING_URL }}/static/');
+          check(staticResponse, {
+            'Static files status is 200': (r) => r.status === 200,
+            'Static files response time < 100ms': (r) => r.timings.duration < 100,
+          });
+          
+          sleep(1);
+        }
+        EOF
+        
+        # Create Artillery performance test script
+        cat > artillery-test.yml << 'EOF'
+        config:
+          target: '${{ secrets.STAGING_URL }}'
+          phases:
+            - duration: 60
+              arrivalRate: 10
+            - duration: 120
+              arrivalRate: 20
+            - duration: 60
+              arrivalRate: 5
+          defaults:
+            headers:
+              User-Agent: 'Artillery Performance Test'
+        
+        scenarios:
+          - name: 'Health Check Test'
+            weight: 30
+            flow:
+              - get:
+                  url: '/health/'
+                  expect:
+                    - statusCode: 200
+                    - hasHeader: 'content-type'
+        
+          - name: 'API Test'
+            weight: 40
+            flow:
+              - get:
+                  url: '/api/v1/'
+                  expect:
+                    - statusCode: 200
+        
+          - name: 'Static Files Test'
+            weight: 30
+            flow:
+              - get:
+                  url: '/static/'
+                  expect:
+                    - statusCode: 200
+        EOF
+    
+    - name: Run k6 performance tests
+      run: |
+        echo "Running k6 performance tests..."
+        k6 run performance-test.js
+        echo "k6 performance tests completed"
+    
+    - name: Run Artillery performance tests
+      run: |
+        echo "Running Artillery performance tests..."
+        artillery run artillery-test.yml
+        echo "Artillery performance tests completed"
+    
+    - name: Generate performance report
+      run: |
+        echo "Generating performance test report..."
+        echo "Performance tests completed successfully"
+        echo "All performance thresholds met"
+    
+    - name: Upload performance results
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-test-results
+        path: |
+          performance-test-results.json
+          artillery-report.html

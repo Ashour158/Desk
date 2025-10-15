@@ -1,0 +1,201 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-app
+  namespace: helpdesk
+  labels:
+    app: django-app
+    component: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: django-app
+  template:
+    metadata:
+      labels:
+        app: django-app
+        component: backend
+    spec:
+      containers:
+      - name: django
+        image: your-registry/helpdesk-django:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DJANGO_SETTINGS_MODULE
+          valueFrom:
+            configMapKeyRef:
+              name: helpdesk-config
+              key: DJANGO_SETTINGS_MODULE
+        - name: DEBUG
+          valueFrom:
+            configMapKeyRef:
+              name: helpdesk-config
+              key: DEBUG
+        - name: ALLOWED_HOSTS
+          valueFrom:
+            configMapKeyRef:
+              name: helpdesk-config
+              key: ALLOWED_HOSTS
+        - name: CORS_ALLOWED_ORIGINS
+          valueFrom:
+            configMapKeyRef:
+              name: helpdesk-config
+              key: CORS_ALLOWED_ORIGINS
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: helpdesk-config
+              key: DB_HOST
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: helpdesk-config
+              key: DB_NAME
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: helpdesk-config
+              key: DB_USER
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: helpdesk-config
+              key: DB_PORT
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: helpdesk-config
+              key: REDIS_URL
+        - name: CELERY_BROKER_URL
+          valueFrom:
+            configMapKeyRef:
+              name: helpdesk-config
+              key: CELERY_BROKER_URL
+        - name: CELERY_RESULT_BACKEND
+          valueFrom:
+            configMapKeyRef:
+              name: helpdesk-config
+              key: CELERY_RESULT_BACKEND
+        - name: EMAIL_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: helpdesk-config
+              key: EMAIL_HOST
+        - name: EMAIL_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: helpdesk-config
+              key: EMAIL_PORT
+        - name: EMAIL_USE_TLS
+          valueFrom:
+            configMapKeyRef:
+              name: helpdesk-config
+              key: EMAIL_USE_TLS
+        - name: DEFAULT_FROM_EMAIL
+          valueFrom:
+            configMapKeyRef:
+              name: helpdesk-config
+              key: DEFAULT_FROM_EMAIL
+        # Secret values
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: helpdesk-secrets
+              key: SECRET_KEY
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: helpdesk-secrets
+              key: DB_PASSWORD
+        - name: EMAIL_HOST_USER
+          valueFrom:
+            secretKeyRef:
+              name: helpdesk-secrets
+              key: EMAIL_HOST_USER
+        - name: EMAIL_HOST_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: helpdesk-secrets
+              key: EMAIL_HOST_PASSWORD
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: helpdesk-secrets
+              key: OPENAI_API_KEY
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: helpdesk-secrets
+              key: ANTHROPIC_API_KEY
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: helpdesk-secrets
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: helpdesk-secrets
+              key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_STORAGE_BUCKET_NAME
+          valueFrom:
+            secretKeyRef:
+              name: helpdesk-secrets
+              key: AWS_STORAGE_BUCKET_NAME
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: static-files
+          mountPath: /app/staticfiles
+        - name: media-files
+          mountPath: /app/media
+        - name: logs
+          mountPath: /app/logs
+      volumes:
+      - name: static-files
+        emptyDir: {}
+      - name: media-files
+        emptyDir: {}
+      - name: logs
+        emptyDir: {}
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-service
+  namespace: helpdesk
+  labels:
+    app: django-app
+spec:
+  selector:
+    app: django-app
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+  type: ClusterIP
+

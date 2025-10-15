@@ -1,0 +1,163 @@
+[
+  {
+    "model": "organizations.organization",
+    "pk": "550e8400-e29b-41d4-a716-446655440000",
+    "fields": {
+      "name": "Demo Organization",
+      "slug": "demo",
+      "description": "Demo organization for testing",
+      "subscription_tier": "enterprise",
+      "max_users": 100,
+      "max_tickets_per_month": 10000,
+      "timezone": "UTC",
+      "language": "en",
+      "is_active": true,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "organizations.organizationsettings",
+    "pk": "550e8400-e29b-41d4-a716-446655440001",
+    "fields": {
+      "organization": "550e8400-e29b-41d4-a716-446655440000",
+      "auto_assign_tickets": true,
+      "require_ticket_approval": false,
+      "allow_customer_ticket_creation": true,
+      "ticket_number_prefix": "TKT",
+      "email_notifications_enabled": true,
+      "default_sla_enabled": true,
+      "default_first_response_time": 240,
+      "default_resolution_time": 1440,
+      "business_hours": {
+        "monday": {"start": "09:00", "end": "17:00", "enabled": true},
+        "tuesday": {"start": "09:00", "end": "17:00", "enabled": true},
+        "wednesday": {"start": "09:00", "end": "17:00", "enabled": true},
+        "thursday": {"start": "09:00", "end": "17:00", "enabled": true},
+        "friday": {"start": "09:00", "end": "17:00", "enabled": true},
+        "saturday": {"start": "10:00", "end": "14:00", "enabled": false},
+        "sunday": {"start": "10:00", "end": "14:00", "enabled": false}
+      },
+      "primary_color": "#007bff",
+      "secondary_color": "#6c757d"
+    }
+  },
+  {
+    "model": "organizations.department",
+    "pk": "550e8400-e29b-41d4-a716-446655440002",
+    "fields": {
+      "organization": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "Technical Support",
+      "description": "Technical support team",
+      "email": "tech-support@demo.com",
+      "is_active": true,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "organizations.department",
+    "pk": "550e8400-e29b-41d4-a716-446655440003",
+    "fields": {
+      "organization": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "Billing Support",
+      "description": "Billing and account support team",
+      "email": "billing@demo.com",
+      "is_active": true,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "tickets.slapolicy",
+    "pk": "550e8400-e29b-41d4-a716-446655440004",
+    "fields": {
+      "organization": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "Standard SLA",
+      "description": "Standard service level agreement",
+      "conditions": {
+        "priority": ["low", "medium", "high", "urgent"]
+      },
+      "first_response_time": 240,
+      "resolution_time": 1440,
+      "operational_hours": {
+        "monday": {"start": "09:00", "end": "17:00", "enabled": true},
+        "tuesday": {"start": "09:00", "end": "17:00", "enabled": true},
+        "wednesday": {"start": "09:00", "end": "17:00", "enabled": true},
+        "thursday": {"start": "09:00", "end": "17:00", "enabled": true},
+        "friday": {"start": "09:00", "end": "17:00", "enabled": true},
+        "saturday": {"start": "10:00", "end": "14:00", "enabled": false},
+        "sunday": {"start": "10:00", "end": "14:00", "enabled": false}
+      },
+      "is_active": true,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "tickets.cannedresponse",
+    "pk": "550e8400-e29b-41d4-a716-446655440005",
+    "fields": {
+      "organization": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "Welcome Message",
+      "content": "Thank you for contacting us. We have received your request and will respond within 24 hours.",
+      "shortcut_key": "welcome",
+      "category": "General",
+      "is_public": true,
+      "usage_count": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "tickets.cannedresponse",
+    "pk": "550e8400-e29b-41d4-a716-446655440006",
+    "fields": {
+      "organization": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "Issue Resolved",
+      "content": "Your issue has been resolved. Please let us know if you need any further assistance.",
+      "shortcut_key": "resolved",
+      "category": "Resolution",
+      "is_public": true,
+      "usage_count": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "automation.emailtemplate",
+    "pk": "550e8400-e29b-41d4-a716-446655440007",
+    "fields": {
+      "organization": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "Ticket Created",
+      "template_type": "ticket_created",
+      "subject": "Ticket #{{ticket_number}} - {{ticket.subject}}",
+      "body_html": "<h2>Your ticket has been created</h2><p>Ticket #{{ticket_number}}: {{ticket.subject}}</p><p>We will respond within 24 hours.</p>",
+      "body_text": "Your ticket has been created\n\nTicket #{{ticket_number}}: {{ticket.subject}}\n\nWe will respond within 24 hours.",
+      "variables": ["ticket_number", "ticket.subject", "customer.full_name"],
+      "is_active": true,
+      "is_system": true,
+      "usage_count": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "automation.emailtemplate",
+    "pk": "550e8400-e29b-41d4-a716-446655440008",
+    "fields": {
+      "organization": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "Ticket Resolved",
+      "template_type": "ticket_resolved",
+      "subject": "Ticket #{{ticket_number}} - Resolved",
+      "body_html": "<h2>Your ticket has been resolved</h2><p>Ticket #{{ticket_number}}: {{ticket.subject}}</p><p>Please rate our service: <a href=\"{{rating_url}}\">Rate Service</a></p>",
+      "body_text": "Your ticket has been resolved\n\nTicket #{{ticket_number}}: {{ticket.subject}}\n\nPlease rate our service: {{rating_url}}",
+      "variables": ["ticket_number", "ticket.subject", "rating_url"],
+      "is_active": true,
+      "is_system": true,
+      "usage_count": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  }
+]
