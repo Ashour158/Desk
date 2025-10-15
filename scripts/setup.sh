@@ -91,7 +91,11 @@ if command -v node &> /dev/null; then
         if [ -d "$dir" ]; then
             echo -e "${YELLOW}Step 8: Installing dependencies in $dir...${NC}"
             cd "$dir"
-            npm ci > /dev/null 2>&1
+            if [ -f package-lock.json ]; then
+                npm ci
+            else
+                npm install
+            fi
             cd ..
             echo -e "${GREEN}✓ Dependencies installed in $dir${NC}"
         fi
