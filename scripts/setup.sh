@@ -44,8 +44,11 @@ echo -e "${YELLOW}Step 4: Installing Python dependencies...${NC}"
 if [ -f "requirements.txt" ]; then
     pip install -r requirements.txt > /dev/null 2>&1
     echo -e "${GREEN}✓ Python dependencies installed${NC}"
+elif [ -f "requirements/base.txt" ]; then
+    pip install -r requirements/base.txt > /dev/null 2>&1
+    echo -e "${YELLOW}✓ Python dependencies installed from requirements/base.txt${NC}"
 else
-    echo -e "${RED}Warning: requirements.txt not found${NC}"
+    echo -e "${RED}Warning: Neither requirements.txt nor requirements/base.txt found${NC}"
 fi
 
 # Install pre-commit hooks
