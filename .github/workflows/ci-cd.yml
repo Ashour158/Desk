@@ -67,7 +67,7 @@ jobs:
     - name: Run pre-commit checks
       run: |
         # Run pre-commit on all files for validation
-        pre-commit run --all-files || true
+        pre-commit run --all-files
         echo "Pre-commit validation completed"
     
     - name: Run linting
