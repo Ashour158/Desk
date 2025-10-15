@@ -439,6 +439,7 @@ coverage html
 - Use TypeScript for React components
 - Write comprehensive tests
 - Update documentation
+- See `.github/copilot-instructions.md` for detailed Copilot coding guidelines
 
 ## 📄 License
 
