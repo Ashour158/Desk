@@ -9,8 +9,8 @@ services:
     source_dir: /
     environment_slug: python
     build_command: pip install -r requirements.txt
-    # The key fix: Add PYTHONPATH and cd to core directory before running gunicorn
-    run_command: cd core && PYTHONPATH=/workspace/core gunicorn config.wsgi:application --bind 0.0.0.0:8080 --workers 2 --timeout 120 --access-logfile - --error-logfile - --log-level info
+    # Using --pythonpath flag as recommended by DigitalOcean
+    run_command: gunicorn --pythonpath /workspace/core config.wsgi:application --bind 0.0.0.0:8080 --workers 2 --timeout 120 --log-level debug
     http_port: 8080
     instance_count: 1
     instance_size_slug: basic-xxs
