@@ -150,3 +150,39 @@ def handle_ticket_status_changes(sender, instance, created, **kwargs):
             ):
                 instance.first_response_at = timezone.now()
                 instance.save(update_fields=["first_response_at"])
+
+
+
+
+@receiver(post_save, sender=Ticket)
+def auto_create_work_order(sender, instance, created, **kwargs):
+    """Automatically create work order when ticket is created."""
+    if not created:
+        return
+
+    try:
+        from apps.field_service.services import WorkOrderAutomationService
+
+        # Initialize automation service
+        service = WorkOrderAutomationService(instance.organization)
+
+        # Attempt to create work order
+        work_order = service.create_work_order_from_ticket(instance)
+
+        if work_order:
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.info(
+                f"Auto-created work order {work_order.work_order_number} "
+                f"for ticket {instance.ticket_number}"
+            )
+    except Exception as e:
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.error(
+            f"Failed to auto-create work order for ticket {instance.ticket_number}: {e}"
+        )
+        # Don't raise exception to avoid breaking ticket creation
+
