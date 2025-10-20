@@ -131,6 +131,29 @@ class WorkOrder(TenantAwareModel):
         max_length=50, unique=True, help_text="Work order number"
     )
 
+    # Source tracking
+    source_ticket = models.ForeignKey(
+        'tickets.Ticket',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='work_orders',
+        help_text="Ticket that generated this work order"
+    )
+    
+    SOURCE_CHOICES = [
+        ('manual', 'Manual Creation'),
+        ('ticket', 'Auto-generated from Ticket'),
+        ('scheduled', 'Scheduled Maintenance'),
+        ('contract', 'Contract-based'),
+    ]
+    source = models.CharField(
+        max_length=20,
+        choices=SOURCE_CHOICES,
+        default='manual',
+        help_text="Source of work order creation"
+    )
+
     # Basic information
     title = models.CharField(max_length=500, help_text="Work order title")
     description = models.TextField(help_text="Detailed description")
@@ -213,6 +236,8 @@ class WorkOrder(TenantAwareModel):
             models.Index(fields=["organization", "priority"]),
             models.Index(fields=["organization", "customer"]),
             models.Index(fields=["work_order_number"]),
+            models.Index(fields=["source_ticket"]),
+            models.Index(fields=["source"]),
         ]
 
     def __str__(self):
@@ -596,3 +621,141 @@ class Route(TenantAwareModel):
 
     def __str__(self):
         return f"Route for {self.technician.user.full_name} on {self.route_date}"
+
+
+
+
+class TicketToWorkOrderRule(TenantAwareModel):
+    """
+    Rules for automatic work order creation from tickets.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255, help_text="Rule name")
+    description = models.TextField(blank=True, help_text="Rule description")
+    is_active = models.BooleanField(default=True, help_text="Whether rule is active")
+    priority = models.IntegerField(
+        default=0, help_text="Higher priority rules execute first"
+    )
+
+    # Conditions (when to create work order)
+    ticket_categories = models.JSONField(
+        default=list,
+        help_text="List of ticket categories that trigger work order creation",
+    )
+    ticket_priorities = models.JSONField(
+        default=list, help_text="List of ticket priorities (e.g., ['high', 'urgent'])"
+    )
+    ticket_tags = models.JSONField(
+        default=list, help_text="List of tags that trigger work order creation"
+    )
+    customer_types = models.JSONField(
+        default=list,
+        help_text="List of customer types (e.g., ['enterprise', 'premium'])",
+    )
+
+    # Work order template
+    work_order_type = models.CharField(
+        max_length=50,
+        choices=WorkOrder.WORK_TYPES,
+        default="repair",
+        help_text="Type of work order to create",
+    )
+    work_order_priority = models.CharField(
+        max_length=20,
+        choices=WorkOrder.PRIORITY_CHOICES,
+        default="medium",
+        help_text="Priority for created work order",
+    )
+    default_duration_hours = models.IntegerField(
+        default=2, help_text="Default duration in hours"
+    )
+
+    # Assignment rules
+    auto_assign = models.BooleanField(
+        default=True, help_text="Automatically assign technician"
+    )
+    assignment_logic = models.CharField(
+        max_length=50,
+        choices=[
+            ("nearest", "Nearest Available Technician"),
+            ("skill_match", "Best Skill Match"),
+            ("workload", "Least Workload"),
+            ("round_robin", "Round Robin"),
+        ],
+        default="skill_match",
+        help_text="Logic for technician assignment",
+    )
+    required_skills = models.JSONField(
+        default=list, help_text="Required skills for technician"
+    )
+
+    # Scheduling
+    auto_schedule = models.BooleanField(
+        default=False, help_text="Automatically schedule work order"
+    )
+    schedule_offset_hours = models.IntegerField(
+        default=24, help_text="Hours from ticket creation to schedule work order"
+    )
+
+    # Notifications
+    notify_customer = models.BooleanField(
+        default=True, help_text="Notify customer when work order is created"
+    )
+    notify_technician = models.BooleanField(
+        default=True, help_text="Notify technician when assigned"
+    )
+
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True
+    )
+
+    objects = TenantManager()
+
+    class Meta:
+        db_table = "ticket_to_work_order_rules"
+        verbose_name = "Ticket to Work Order Rule"
+        verbose_name_plural = "Ticket to Work Order Rules"
+        ordering = ["-priority", "name"]
+        indexes = [
+            models.Index(fields=["organization", "is_active", "priority"]),
+        ]
+
+    def __str__(self):
+        return f"{self.organization.name} - {self.name}"
+
+    def matches_ticket(self, ticket):
+        """
+        Check if this rule matches the given ticket.
+
+        Args:
+            ticket: Ticket instance to check
+
+        Returns:
+            bool: True if rule matches, False otherwise
+        """
+        # Check category
+        if self.ticket_categories and ticket.category not in self.ticket_categories:
+            return False
+
+        # Check priority
+        if self.ticket_priorities and ticket.priority not in self.ticket_priorities:
+            return False
+
+        # Check tags
+        if self.ticket_tags:
+            ticket_tag_names = list(ticket.tags.values_list("name", flat=True))
+            if not any(tag in ticket_tag_names for tag in self.ticket_tags):
+                return False
+
+        # Check customer type
+        if self.customer_types:
+            customer_type = getattr(ticket.customer, "customer_type", None)
+            if customer_type not in self.customer_types:
+                return False
+
+        return True
+

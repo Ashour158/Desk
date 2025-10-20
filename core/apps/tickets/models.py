@@ -133,10 +133,21 @@ class Ticket(models.Model):
         super().save(*args, **kwargs)
 
     def generate_ticket_number(self):
-        """Generate unique ticket number."""
-        import uuid
+        """Generate unique sequential ticket number."""
+        # Get or create sequence for organization
+        sequence, created = TicketNumberSequence.objects.get_or_create(
+            organization=self.organization,
+            defaults={
+                "prefix": "TK",
+                "current_number": 0,
+                "padding_length": 5,
+                "include_year": True,
+                "include_month": False,
+                "year_reset": True,
+            },
+        )
 
-        return f"TK-{uuid.uuid4().hex[:8].upper()}"
+        return sequence.get_next_number()
 
     def is_overdue(self):
         """Check if ticket is overdue."""
@@ -199,7 +210,16 @@ class TicketComment(models.Model):
 
 
 class TicketAttachment(models.Model):
-    """File attachments for tickets."""
+    """Enhanced file attachments for tickets."""
+
+    FILE_CATEGORIES = [
+        ("image", "Image"),
+        ("document", "Document"),
+        ("video", "Video"),
+        ("audio", "Audio"),
+        ("archive", "Archive"),
+        ("other", "Other"),
+    ]
 
     ticket = models.ForeignKey(
         Ticket, on_delete=models.CASCADE, related_name="attachments"
@@ -217,14 +237,30 @@ class TicketAttachment(models.Model):
 
     # File information
     file_name = models.CharField(max_length=255)
-    file_size = models.BigIntegerField()
-    file_type = models.CharField(max_length=100)
+    original_filename = models.CharField(max_length=255)
+    file_size = models.BigIntegerField(help_text="File size in bytes")
+    file_type = models.CharField(max_length=100)  # MIME type
+    file_category = models.CharField(
+        max_length=20, choices=FILE_CATEGORIES, default="other"
+    )
     file_path = models.CharField(max_length=500)
     file_url = models.URLField(blank=True)
 
+    # Thumbnail for images
+    thumbnail_path = models.CharField(max_length=500, blank=True)
+    thumbnail_url = models.URLField(blank=True)
+
+    # Security
+    virus_scanned = models.BooleanField(default=False)
+    virus_scan_result = models.CharField(max_length=50, blank=True)
+    is_safe = models.BooleanField(default=False)
+
     # Metadata
-    is_public = models.BooleanField(default=True)
+    is_public = models.BooleanField(
+        default=False, help_text="Visible to customers in portal"
+    )
     download_count = models.IntegerField(default=0)
+    last_downloaded_at = models.DateTimeField(null=True, blank=True)
 
     # Timestamps
     uploaded_at = models.DateTimeField(auto_now_add=True)
@@ -234,10 +270,44 @@ class TicketAttachment(models.Model):
         indexes = [
             models.Index(fields=["ticket", "uploaded_at"]),
             models.Index(fields=["uploaded_by", "uploaded_at"]),
+            models.Index(fields=["file_category"]),
+            models.Index(fields=["is_public"]),
         ]
 
     def __str__(self):
         return f"{self.file_name} - {self.ticket.ticket_number}"
+
+    def record_download(self):
+        """Record file download."""
+        self.download_count += 1
+        self.last_downloaded_at = timezone.now()
+        self.save(update_fields=["download_count", "last_downloaded_at"])
+
+    def determine_file_category(self):
+        """Determine file category from MIME type."""
+        if self.file_type.startswith("image/"):
+            return "image"
+        elif self.file_type.startswith("video/"):
+            return "video"
+        elif self.file_type.startswith("audio/"):
+            return "audio"
+        elif self.file_type in [
+            "application/pdf",
+            "application/msword",
+            "application/vnd.ms-excel",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "text/plain",
+        ]:
+            return "document"
+        elif self.file_type in [
+            "application/zip",
+            "application/x-rar-compressed",
+            "application/x-7z-compressed",
+        ]:
+            return "archive"
+        else:
+            return "other"
 
 
 class TicketHistory(models.Model):
@@ -326,3 +396,107 @@ class CannedResponse(models.Model):
         """Increment usage count."""
         self.usage_count += 1
         self.save(update_fields=["usage_count"])
+
+
+
+
+class TicketNumberSequence(models.Model):
+    """Database sequence for ticket numbering per organization."""
+
+    organization = models.OneToOneField(
+        Organization, on_delete=models.CASCADE, related_name="ticket_sequence"
+    )
+    current_number = models.IntegerField(default=0)
+    prefix = models.CharField(max_length=10, default="TK")
+    year_reset = models.BooleanField(
+        default=True, help_text="Reset counter at start of each year"
+    )
+    month_reset = models.BooleanField(
+        default=False, help_text="Reset counter at start of each month"
+    )
+    padding_length = models.IntegerField(
+        default=5, help_text="Number of digits (e.g., 5 = 00001)"
+    )
+
+    # Format options
+    include_year = models.BooleanField(default=True)
+    include_month = models.BooleanField(default=False)
+    separator = models.CharField(max_length=5, default="-")
+
+    last_reset_date = models.DateField(auto_now_add=True)
+
+    class Meta:
+        db_table = "ticket_number_sequences"
+        verbose_name = "Ticket Number Sequence"
+        verbose_name_plural = "Ticket Number Sequences"
+
+    def __str__(self):
+        return f"{self.organization.name} - {self.prefix}"
+
+    def get_next_number(self):
+        """
+        Get next ticket number with atomic increment.
+
+        Returns:
+            str: Formatted ticket number (e.g., "TK-2025-00001")
+        """
+        from django.db import transaction
+
+        with transaction.atomic():
+            # Lock the row for update
+            sequence = TicketNumberSequence.objects.select_for_update().get(id=self.id)
+
+            # Check if reset is needed
+            current_date = timezone.now().date()
+            should_reset = False
+
+            if sequence.year_reset and current_date.year > sequence.last_reset_date.year:
+                should_reset = True
+            elif sequence.month_reset and (
+                current_date.year > sequence.last_reset_date.year
+                or current_date.month > sequence.last_reset_date.month
+            ):
+                should_reset = True
+
+            if should_reset:
+                sequence.current_number = 0
+                sequence.last_reset_date = current_date
+
+            # Increment counter
+            sequence.current_number += 1
+            sequence.save()
+
+            # Format the number
+            return sequence.format_ticket_number(sequence.current_number)
+
+    def format_ticket_number(self, number):
+        """
+        Format ticket number according to configuration.
+
+        Args:
+            number: Sequential number
+
+        Returns:
+            str: Formatted ticket number
+
+        Examples:
+            - TK-2025-00001 (with year)
+            - TK-2025-10-00001 (with year and month)
+            - TK-00001 (no year/month)
+        """
+        parts = [self.prefix]
+
+        current_date = timezone.now().date()
+
+        if self.include_year:
+            parts.append(str(current_date.year))
+
+        if self.include_month:
+            parts.append(str(current_date.month).zfill(2))
+
+        # Add padded number
+        padded_number = str(number).zfill(self.padding_length)
+        parts.append(padded_number)
+
+        return self.separator.join(parts)
+
