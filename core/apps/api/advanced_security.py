@@ -2,6 +2,7 @@
 Advanced security measures including request size limits and enhanced rate limiting.
 """
 
+import uuid
 from django.core.cache import cache
 from django.http import JsonResponse
 from django.utils import timezone

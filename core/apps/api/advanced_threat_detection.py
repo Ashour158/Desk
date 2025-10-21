@@ -2,6 +2,7 @@
 Advanced threat detection and security hardening system.
 """
 
+import uuid
 import json
 import logging
 import time

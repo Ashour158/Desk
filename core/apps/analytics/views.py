@@ -2,6 +2,7 @@
 Analytics and reporting views for helpdesk platform.
 """
 
+import logging
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
@@ -18,6 +19,8 @@ from apps.tickets.models import Ticket, TicketComment
 from apps.field_service.models import WorkOrder, ServiceReport
 from apps.accounts.models import User
 from apps.organizations.models import Organization
+
+logger = logging.getLogger(__name__)
 
 
 @login_required

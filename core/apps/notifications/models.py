@@ -2,11 +2,14 @@
 Notification models for helpdesk platform.
 """
 
+import logging
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from apps.organizations.models import Organization
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 class Notification(models.Model):

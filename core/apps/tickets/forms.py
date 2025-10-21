@@ -4,7 +4,7 @@ Forms for ticket system.
 
 from django import forms
 from django.contrib.auth import get_user_model
-from .models import Ticket, TicketComment, CannedResponse, SLAPolicy
+from .models import Ticket, TicketComment, TicketAttachment, CannedResponse, SLAPolicy
 from apps.organizations.models import Department
 
 User = get_user_model()

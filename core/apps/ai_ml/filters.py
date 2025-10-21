@@ -7,7 +7,16 @@ from django.db.models import Q
 from django.utils import timezone
 from datetime import timedelta
 
-from .models import MLModel, Prediction, AnomalyDetection
+from .models import (
+    MLModel,
+    Prediction,
+    AnomalyDetection,
+    CustomerInsight,
+    DemandForecast,
+    Recommendation,
+    MLTrainingJob,
+    DataPipeline,
+)
 
 
 class MLModelFilter(django_filters.FilterSet):

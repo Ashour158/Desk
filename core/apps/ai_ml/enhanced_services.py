@@ -13,6 +13,7 @@ from typing import Dict, List, Optional, Any, Union, Tuple
 import logging
 import asyncio
 from datetime import datetime
+import io
 import numpy as np
 from PIL import Image
 import torch

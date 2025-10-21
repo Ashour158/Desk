@@ -225,7 +225,7 @@ class PredictiveAnalytics:
             defaults={
                 "name": f"{model_type.replace('_', ' ').title()} Model",
                 "algorithm": "random_forest",
-                "status": "active" if not created else "training",
+                "status": "training" if created else "active",
             },
         )
         return model
