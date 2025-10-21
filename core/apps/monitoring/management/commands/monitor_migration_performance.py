@@ -108,7 +108,7 @@ class Command(BaseCommand):
                     INSERT INTO test_migration_table (name) 
                     SELECT 'test_' || generate_series(1, 1000);
                 ''',
-                'rollback_sql': 'DELETE FROM test_migration_table WHERE name LIKE 'test_%';'
+                'rollback_sql': "DELETE FROM test_migration_table WHERE name LIKE 'test_%';"
             }
         ]
         

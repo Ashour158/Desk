@@ -3,7 +3,7 @@ Advanced Analytics filters for API endpoints.
 """
 
 import django_filters
-from django.db.models import Q
+from django.db.models import Q, F as models
 from django.utils import timezone
 from datetime import timedelta
 

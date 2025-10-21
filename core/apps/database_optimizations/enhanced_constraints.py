@@ -52,33 +52,33 @@ class EnhancedConstraints:
                 name='check_ticket_updated_after_created'
             ),
             models.CheckConstraint(
-                check=Q(resolved_at__isnull=True) | Q(resolved_at__gte=models.F('created_at'))),
+                check=Q(resolved_at__isnull=True) | Q(resolved_at__gte=models.F('created_at')),
                 name='check_ticket_resolved_after_created'
             ),
             models.CheckConstraint(
-                check=Q(first_response_at__isnull=True) | Q(first_response_at__gte=models.F('created_at'))),
+                check=Q(first_response_at__isnull=True) | Q(first_response_at__gte=models.F('created_at')),
                 name='check_ticket_first_response_after_created'
             ),
             models.CheckConstraint(
-                check=Q(closed_at__isnull=True) | Q(closed_at__gte=models.F('created_at'))),
+                check=Q(closed_at__isnull=True) | Q(closed_at__gte=models.F('created_at')),
                 name='check_ticket_closed_after_created'
             ),
             
             # SLA constraints
             models.CheckConstraint(
-                check=Q(first_response_due__isnull=True) | Q(first_response_due__gte=models.F('created_at'))),
+                check=Q(first_response_due__isnull=True) | Q(first_response_due__gte=models.F('created_at')),
                 name='check_ticket_first_response_due_after_created'
             ),
             models.CheckConstraint(
-                check=Q(resolution_due__isnull=True) | Q(resolution_due__gte=models.F('created_at'))),
+                check=Q(resolution_due__isnull=True) | Q(resolution_due__gte=models.F('created_at')),
                 name='check_ticket_resolution_due_after_created'
             ),
             models.CheckConstraint(
-                check=Q(first_response_at__isnull=True) | Q(first_response_due__isnull=True) | Q(first_response_at__lte=models.F('first_response_due'))),
+                check=Q(first_response_at__isnull=True) | Q(first_response_due__isnull=True) | Q(first_response_at__lte=models.F('first_response_due')),
                 name='check_ticket_first_response_within_sla'
             ),
             models.CheckConstraint(
-                check=Q(resolved_at__isnull=True) | Q(resolution_due__isnull=True) | Q(resolved_at__lte=models.F('resolution_due'))),
+                check=Q(resolved_at__isnull=True) | Q(resolution_due__isnull=True) | Q(resolved_at__lte=models.F('resolution_due')),
                 name='check_ticket_resolution_within_sla'
             ),
             
@@ -125,7 +125,7 @@ class EnhancedConstraints:
                 name='check_user_updated_after_created'
             ),
             models.CheckConstraint(
-                check=Q(last_active_at__isnull=True) | Q(last_active_at__gte=models.F('created_at'))),
+                check=Q(last_active_at__isnull=True) | Q(last_active_at__gte=models.F('created_at')),
                 name='check_user_last_active_after_created'
             ),
             
@@ -244,11 +244,11 @@ class EnhancedConstraints:
                 name='check_workorder_updated_after_created'
             ),
             models.CheckConstraint(
-                check=Q(completed_at__isnull=True) | Q(completed_at__gte=models.F('created_at'))),
+                check=Q(completed_at__isnull=True) | Q(completed_at__gte=models.F('created_at')),
                 name='check_workorder_completed_after_created'
             ),
             models.CheckConstraint(
-                check=Q(scheduled_at__isnull=True) | Q(scheduled_at__gte=models.F('created_at'))),
+                check=Q(scheduled_at__isnull=True) | Q(scheduled_at__gte=models.F('created_at')),
                 name='check_workorder_scheduled_after_created'
             ),
             
@@ -291,7 +291,7 @@ class EnhancedConstraints:
                 name='check_kb_article_updated_after_created'
             ),
             models.CheckConstraint(
-                check=Q(published_at__isnull=True) | Q(published_at__gte=models.F('created_at'))),
+                check=Q(published_at__isnull=True) | Q(published_at__gte=models.F('created_at')),
                 name='check_kb_article_published_after_created'
             ),
             
@@ -318,7 +318,7 @@ class EnhancedConstraints:
             
             # Business logic constraints
             models.CheckConstraint(
-                check=Q(is_active=True) | Q(last_activity__lt=models.F('created_at') + models.F('created_at'))),
+                check=Q(is_active=True) | Q(last_activity__lt=models.F('created_at') + models.F('created_at')),
                 name='check_session_inactive_when_expired'
             ),
         ]
@@ -329,13 +329,13 @@ class EnhancedConstraints:
         return [
             # Data validation constraints
             models.CheckConstraint(
-                check=Q(expires_at__isnull=True) | Q(expires_at__gte=models.F('granted_at'))),
+                check=Q(expires_at__isnull=True) | Q(expires_at__gte=models.F('granted_at')),
                 name='check_permission_expires_after_granted'
             ),
             
             # Business logic constraints
             models.CheckConstraint(
-                check=Q(is_active=True) | Q(expires_at__lt=models.F('granted_at'))),
+                check=Q(is_active=True) | Q(expires_at__lt=models.F('granted_at')),
                 name='check_permission_inactive_when_expired'
             ),
         ]

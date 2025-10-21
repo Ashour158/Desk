@@ -16,6 +16,7 @@ from .models import Ticket, TicketComment, TicketAttachment
 from .serializers import TicketSerializer, TicketCommentSerializer
 from apps.accounts.models import User
 from apps.organizations.models import Organization
+from apps.knowledge_base.models import KBArticle, KBArticleView
 
 logger = logging.getLogger(__name__)
 
